@@ -2,9 +2,13 @@
 
 namespace CCM\Leads\Controller;
 
-use Laravel\Lumen\Routing\Controller as BaseController;
+use Illuminate\Http\Request;
+use Laravel\Lumen\Routing\Controller as LumenController;
 
-class Controller extends BaseController
+class Controller extends LumenController
 {
-    //
+    public function __construct(Request $request)
+    {
+        // die(' --- CCM\Leads\Controller --- ');
+    }
 }
