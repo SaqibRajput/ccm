@@ -1,6 +1,6 @@
 <?php
 
-    namespace App\Leads\Models;
+    namespace CCM\Leads\Models;
 
     use App\Models\DB;
     use Carbon\Carbon;

@@ -4,7 +4,7 @@ namespace CCM\Leads;
 
 use Illuminate\Support\ServiceProvider;
 
-class LeadsServiceProvider extends ServiceProvider
+class ServiceProvider extends ServiceProvider
 {
     /**
      * Bootstrap the application services.
@@ -49,6 +49,12 @@ class LeadsServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        // Load the helpers.php
+        if (file_exists($helpers = $this->path . 'src/Helpers/Helpers.php'))
+        {
+            require_once $helpers;
+        }
+
         // Automatically apply the package configuration
         $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'leads');
 
