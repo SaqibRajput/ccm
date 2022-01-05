@@ -1,11 +1,11 @@
 {
-    "name": "ccm1/leads",
+    "name": "ccm/leads",
     "description": "Functions and settings for all services",
     "keywords": [
         "ccm",
         "leads"
     ],
-    "homepage": "https://github.com/ccm/leads",
+    "homepage": "https://packagist.org/packages/ccm/leads",
     "license": "MIT",
     "type": "library",
     "authors": [
