@@ -1,6 +1,6 @@
 <?php
 
-namespace CCM\Leads\ServiceProvider;
+namespace CCM\Leads;
 
 use Illuminate\Support\ServiceProvider as LumenServiceProvider;
 
@@ -20,9 +20,9 @@ class ServiceProvider extends LumenServiceProvider
         // $this->loadRoutesFrom(__DIR__.'/routes.php');
 
         if ($this->app->runningInConsole()) {
-            $this->publishes([
-                __DIR__.'/../../config/config.php' => config_path('leads.php'),
-            ], 'config');
+//            $this->publishes([
+//                __DIR__.'/../config/config.php' => config_path('leads.php'),
+//            ], 'config');
 
             // Publishing the views.
             /*$this->publishes([
@@ -50,13 +50,14 @@ class ServiceProvider extends LumenServiceProvider
     public function register()
     {
         // Load the helpers.php
-        if (file_exists($helpers = __DIR__.'/../Helpers/Helpers.php'))
+        if (file_exists($helpers = __DIR__.'/Helpers/Helpers.php'))
         {
             require_once $helpers;
         }
 
         // Automatically apply the package configuration
-        $this->mergeConfigFrom(__DIR__.'/../../config/config.php', 'leads');
+//        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'leads');
+        $this->mergeConfigFrom(__DIR__.'/../config/services.php', 'services');
 
         // Register the main class to use with the facade
         $this->app->singleton('leads', function () {
