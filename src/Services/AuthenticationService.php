@@ -4,15 +4,15 @@
 
     use Illuminate\Http\Request;
 
-    class AuthService extends Service
+    class AuthenticationService extends Service
     {
         public $baseUri;
         public $secret;
 
         public function __construct()
         {
-            $this->baseUri = config('services.auth.base_uri');
-            $this->secret = config('services.auth.secret');
+            $this->baseUri = config('services.authentication.base_uri');
+            $this->secret = config('services.authentication.secret');
         }
 
         /* Authenticate Controller */

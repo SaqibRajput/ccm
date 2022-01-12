@@ -1,14 +1,19 @@
 <?php
 
-namespace CCM\Leads\Controller;
+    namespace CCM\Leads\Controller;
 
-use Illuminate\Http\Request;
-use Laravel\Lumen\Routing\Controller as LumenController;
+    use Illuminate\Http\Request;
+    use Laravel\Lumen\Routing\Controller as LumenController;
 
-class Controller extends LumenController
-{
-    public function __construct(Request $request)
+    class Controller extends LumenController
     {
-        // die(' --- CCM\Leads\Controller --- ');
+        public function __construct(Request $request)
+        {
+
+        }
+
+        public function apiResponse($data)
+        {
+            return $data;
+        }
     }
-}

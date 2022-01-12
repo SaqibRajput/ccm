@@ -3,23 +3,19 @@
     use GuzzleHttp\Client;
     use Illuminate\Http\Request;
 
-    function performRequest($method, $requestUrl, $formParams = [], $headers = [])
+    if (! function_exists('createResponseData'))
     {
-        $client = new Client([
-            'base_uri'  =>  $this->baseUri,
-        ]);
-
-        if(isset($this->secret))
+        function performRequest($method, $requestUrl, $formParams = [], $headers = [])
         {
-            $headers['Authorization'] = $this->secret;
+            $client = new Client(['base_uri' => $this->baseUri,]);
+            if (isset($this->secret))
+            {
+                $headers['Authorization'] = $this->secret;
+            }
+            $response = $client->request($method, $requestUrl, ['form_params' => $formParams, 'headers' => $headers,]);
+
+            return $response->getBody()->getContents();
         }
-
-        $response = $client->request($method, $requestUrl, [
-            'form_params' => $formParams,
-            'headers'     => $headers,
-        ]);
-
-        return $response->getBody()->getContents();
     }
 
     if (! function_exists('createResponseData'))
@@ -107,5 +103,57 @@
             $response['data'] = $data;
 
             return $response;
+        }
+    }
+
+    if (! function_exists('lumenLog'))
+    {
+        function lumenLog($message)
+        {
+            \Log::info($message);
+        }
+    }
+
+    if (!function_exists('curlRequest'))
+    {
+        function curlRequest($method, $endPoint, $params = [])
+        {
+            $response = null;
+
+            try
+            {
+                $client   = new Client();
+                $response = $client->request($method, $endPoint, $params);
+
+            }
+            catch (\Exception $e)
+            {
+                lumenLog($e->getMessage());
+            }
+
+            return $response;
+        }
+    }
+
+    use Illuminate\Support\Str;
+
+    if (!function_exists('uniqueCode'))
+    {
+        function uniqueCode($limit = "25", $isString = true)
+        {
+            $result = '';
+            if($isString)
+            {
+                $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+            }
+            else {
+                $characters = '0123456789';
+            }
+
+            for($a = 1 ; $a <= $limit ; $a++) {
+                $result .= $characters[rand(0, strlen($characters)-1)];
+            }
+
+            return $result;
         }
     }

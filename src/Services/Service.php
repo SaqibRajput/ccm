@@ -26,7 +26,11 @@
                 return $response->getBody()->getContents();
             }
             catch(\Exception $e) {
-                \Log::info("Exception callExternalService: ".$e->getMessage());
+                lumenLog("---------------|Service Call failed |---------------");
+                lumenLog($this->baseUri);
+                lumenLog($this->secret);
+                lumenLog($e->getMessage());
+                lumenLog("---------------|Service Call failed |---------------");
             }
         }
     }
