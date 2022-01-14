@@ -18,14 +18,15 @@
 
         public function __construct()
         {
+            parent::__construct();
             $this->baseUri = config('services.logs.base_uri');
             $this->secret  = config('services.logs.secret');
         }
 
         /* Authenticate Controller */
-        public function login(Request $request)
+        public function login($request)
         {
-            return $this->callExternalService('POST', '/login', $request->toArray());
+            return $this->callOtherService('POST', '/login', $request->toArray());
         }
 
     }

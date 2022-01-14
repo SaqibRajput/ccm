@@ -18,14 +18,15 @@
 
         public function __construct()
         {
+            parent::__construct();
             $this->baseUri = config('services.broadcast.base_uri');
             $this->secret  = config('services.broadcast.secret');
         }
 
         /* Authenticate Controller */
-        public function sendEmail(Request $request)
+        public function sendEmail($param)
         {
-            return $this->callExternalService('POST', '/sendEmail', $request->toArray());
+            return $this->callOtherService('POST', '/sendEmail', $param);
         }
 
     }

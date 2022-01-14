@@ -8,6 +8,9 @@
      */
 
     return [
+        'service' => [
+            'failed' => 'failed internal service call for :serviceName, process depends on this service so we cannot continue without this.',
+        ],
         'error' => [
             'fail' => 'failed failed failed failed failed failed',
         ],

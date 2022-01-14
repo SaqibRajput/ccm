@@ -18,14 +18,16 @@
 
         public function __construct()
         {
-            $this->baseUri = config('companies.logs.base_uri');
-            $this->secret  = config('companies.logs.secret');
+            parent::__construct();
+            $this->baseUri = config('services.companies.base_uri');
+            $this->secret  = config('services.companies.secret');
         }
 
         /* Authenticate Controller */
-        public function login(Request $request)
+        public function getCompany($company_id)
         {
-            return $this->callExternalService('POST', '/', $request->toArray());
+            $param = ['company_id' => $company_id];
+            return $this->callOtherService('POST', '/', $param);
         }
 
     }
