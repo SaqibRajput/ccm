@@ -16,7 +16,7 @@
 
         public function __construct()
         {
-            $this->timeOut = env("SERVICE_TIME_OUT", 3);
+            $this->timeOut = env("SERVICE_TIME_OUT", 30);
         }
 
         public function callOtherService($method, $requestUrl, $formParams = [], $headers = [])
@@ -24,29 +24,26 @@
             $response = null;
 
             try {
-                $client = new Client([
-                    'base_uri' => $this->baseUri
-                ]);
 
                 if(isset($this->secret))
                 {
                     $headers['service-secret-token'] = $this->secret;
                 }
 
-                $clientReaponse = $client->request($method, $requestUrl, [
+                $client = new Client();
+                $clientReaponse = $client->request($method, $this->baseUri.$requestUrl, [
                     'form_params' => $formParams,
-                    'headers'     => $headers,
+                    'headers'     => $headers
                 ]);
-                echo '<pre>';print_r($clientReaponse);echo '</pre>'; die('-----');
 
                 $response = $clientReaponse->getBody()->getContents();
-                $response['success'] = true;
             }
             catch(Exception $ex)
             {
                 $response['success'] = false;
                 $response['exception'] = get_class($ex);
                 $response['message'] = $ex->getMessage();
+                $response['message'] = $ex->getTrace();
                 lumenLog("---------------|Service Call failed |---------------");
                 lumenLog(get_class($ex));
                 lumenLog($this->baseUri);
