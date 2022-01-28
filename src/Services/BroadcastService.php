@@ -26,7 +26,7 @@
         /* Authenticate Controller */
         public function sendEmail($param)
         {
-            return $this->callOtherService('POST', '/sendEmail', $param);
+            return $this->callOtherService('POST', 'send-email', $param);
         }
 
     }

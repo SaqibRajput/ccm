@@ -24,10 +24,25 @@
         }
 
         /* Authenticate Controller */
-        public function getCompany($company_id)
+        // create new api for internal services call
+        public function getCompany($companyId)
         {
-            $param = ['company_id' => $company_id];
-            return $this->callOtherService('POST', '/', $param);
+            $param = ['company_id' => $companyId];
+            return $this->callOtherService('GET', 'account/company/'.$companyId, $param);
         }
+
+        public function deleteIncompleteSignup($companyId)
+        {
+            $param = ['company_id' => $companyId];
+            return $this->callOtherService('POST', 'account/company/delete-incomplete-signup', $param);
+        }
+
+        // need to fix this function
+        public function getCompaniesListByDomain($email)
+        {
+            $param = ['emails' => $email];
+            return $this->callOtherService('POST', 'account/company/list-by-domain', $param);
+        }
+        // create new api for internal services call
 
     }

@@ -21,39 +21,46 @@
 
         public function callOtherService($method, $requestUrl, $formParams = [], $headers = [])
         {
+
             $response = null;
 
-            try {
+            try
+            {
+                $timeOutArray = [
+                    'timeout' => $this->timeOut,
+                    'connect_timeout' => $this->timeOut
+                ];
 
-                if(isset($this->secret))
-                {
-                    $headers['service-secret-token'] = $this->secret;
-                }
+                $endPoint = $this->baseUri.$requestUrl;
+                $headers['service-secret-token'] = $this->secret;
 
-                $client = new Client();
-                $clientReaponse = $client->request($method, $this->baseUri.$requestUrl, [
+                $request = [
                     'form_params' => $formParams,
                     'headers'     => $headers
-                ]);
+                ];
 
-                $response = $clientReaponse->getBody()->getContents();
+                $client   = new Client($timeOutArray);
+                $curlResponse = $client->request($method, $endPoint, $request);
+
+                $content = $curlResponse->getBody()->getContents();
+
+                // check response is json to decode
+                $response = (isJson($content)) ? json_decode($content, true) : $content;
             }
-            catch(Exception $ex)
+            catch (\Exception $ex)
             {
-                $response['success'] = false;
-                $response['exception'] = get_class($ex);
-                $response['message'] = $ex->getMessage();
-                $response['message'] = $ex->getTrace();
-                lumenLog("---------------|Service Call failed |---------------");
-                lumenLog(get_class($ex));
-                lumenLog($this->baseUri);
-                lumenLog($this->secret);
-                lumenLog($ex->getMessage());
-                lumenLog("---------------|Service Call failed |---------------");
+                // response set as null to handle same in all project.
+                $response = null;
+
+                lumenLog('Exception: callOtherService : Start');
+                lumenLog('$timeOut: '.$this->timeOut);
+                lumenLog('$method: '.$method);
+                lumenLog('$endPoint: '.$endPoint);
+                lumenLog('$params: '.json_encode($request));
+                lumenLog($ex->getLine().' - '.$ex->getMessage());
+                lumenLog('Exception: callOtherService : End');
             }
-            finally
-            {
-                return $response;
-            }
+
+            return $response;
         }
     }

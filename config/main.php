@@ -98,7 +98,7 @@
 //            'ccm_operations_email' => env('CCM_OPERATIONS_TEAM_EMAIL', 'no-reply@connection.com'),
 //
 //            'email_header_logo_path' => env('EMAIL_HEADER_LOGO_PATH', null),
-//            'email_code_expiry' => env("EMAIL_CODE_EXPIRY", 24),
+            'email_code_expiry' => env("EMAIL_CODE_EXPIRY", 24),
 //            'customer_service_telephone_number' => env("CUSTOMER_SERVICE_TELEPHONE_NUMBER", ''),
 //
 //

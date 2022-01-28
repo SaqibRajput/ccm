@@ -200,7 +200,7 @@
             $disp = '*';
             if (count($collectCriteria->get('disp')) > 0 && $collectCriteria->get('disp') != '*')
             {
-                //            $disp = collect($this->mapping)->only($collectCriteria->get('disp'))->values()->toArray();
+                // $disp = collect($this->mapping)->only($collectCriteria->get('disp'))->values()->toArray();
                 $disp = [];
                 foreach ($collectCriteria->get('disp') as $requested_disp)
                 {
