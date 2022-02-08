@@ -7,7 +7,8 @@
 
     use CCM\Leads\Jobs\SendEmail;
     use CCM\Leads\Jobs\LoginLog;
-
+    use CCM\Leads\Jobs\AuditLog;
+    
     class Controller extends LumenController
     {
         public function __construct(Request $request)
@@ -37,5 +38,20 @@
             ]);
 
             dispatch(new LoginLog($request));
+        }
+
+        // send audit log request with queue
+        public function auditLog($request, $object, $data = [], $type = 'select', $updatedData = []) {
+
+            $request->merge([
+                'params' => [
+                    'type' => $type,
+                    'object' => $object,
+                    'data' => $data,
+                    'updatedData' => $updatedData // in case of update.
+                ]
+            ]);
+
+            dispatch(new AuditLog($request));
         }
     }

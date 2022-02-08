@@ -29,4 +29,10 @@
             return $this->callOtherService('POST', '/login', $request->toArray());
         }
 
+        /* From all services */
+        public function audit($request)
+        {
+            return $this->callOtherService('POST', '/audit', $request->toArray());
+        }
+
     }
