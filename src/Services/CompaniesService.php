@@ -34,7 +34,7 @@
         public function deleteIncompleteSignup($companyId)
         {
             $param = ['company_id' => $companyId];
-            return $this->callOtherService('POST', 'account/company/delete-incomplete-signup', $param);
+            return $this->callOtherService('POST', 'account/delete-incomplete-signup', $param);
         }
 
         // need to fix this function

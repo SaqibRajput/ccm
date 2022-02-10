@@ -2,13 +2,14 @@
 
     namespace CCM\Leads\Controller;
 
+    use Validator;
     use Illuminate\Http\Request;
     use Laravel\Lumen\Routing\Controller as LumenController;
 
     use CCM\Leads\Jobs\SendEmail;
     use CCM\Leads\Jobs\LoginLog;
     use CCM\Leads\Jobs\AuditLog;
-    
+
     class Controller extends LumenController
     {
         public function __construct(Request $request)
@@ -53,5 +54,33 @@
             ]);
 
             dispatch(new AuditLog($request));
+        }
+
+        public function getGenericData(Request $request)
+        {
+            lumenLog('$request->all()');
+            lumenLog($request->all());
+
+            $validator = validator::make($request->all(), [
+                'model' => 'required',
+                'where' => 'required|array',
+            ], []);
+
+            if ($validator->fails())
+            {
+                return createResponseData(422, false, $validator->errors());
+            }
+            try
+            {
+                $model = "App\\Models\\".$request->model;
+                $where = $request->where;
+                $tableData = $model::where($where)->get();
+
+                return createResponseData(200, true, '', $tableData);
+            }
+            catch(\Exception $ex)
+            {
+                return createResponseData(422, false, $ex->getMessage());
+            }
         }
     }
