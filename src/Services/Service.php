@@ -63,4 +63,15 @@
 
             return $response;
         }
+
+        public function getGenericData($model, $where)
+        {
+            $param = [
+                'model' => $model,
+                'where' => $where
+            ];
+
+//            echo '<pre>';print_r($request->all());echo '</pre>'; die('-----');
+            return $this->callOtherService('POST', '/service/get-generic-data', $param);
+        }
     }

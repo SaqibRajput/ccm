@@ -41,7 +41,7 @@
         public function getCompaniesListByDomain($email)
         {
             $param = ['emails' => $email];
-            return $this->callOtherService('POST', 'account/company/list-by-domain', $param);
+            return $this->callOtherService('POST', 'account/companies-list-by-domain', $param);
         }
         // create new api for internal services call
 
