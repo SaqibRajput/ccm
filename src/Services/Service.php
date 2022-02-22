@@ -64,14 +64,46 @@
             return $response;
         }
 
-        public function getGenericData($model, $where)
+        public function getServiceData($model, $where, $columns = [], $with = [], $first = false)
         {
             $param = [
                 'model' => $model,
+                'columns' => $columns,
+                'where' => $where,
+                'with' => $with,
+            ];
+
+            return $this->callOtherService('POST', '/service/get-service-data', $param);
+        }
+
+        public function createServiceData($model, $data)
+        {
+            $param = [
+                'model' => $model,
+                'data' => $data
+            ];
+
+            return $this->callOtherService('POST', '/service/create-service-data', $param);
+        }
+
+        public function updateServiceData($model, $data, $where)
+        {
+            $param = [
+                'model' => $model,
+                'data' => $data,
                 'where' => $where
             ];
 
-//            echo '<pre>';print_r($request->all());echo '</pre>'; die('-----');
-            return $this->callOtherService('POST', '/service/get-generic-data', $param);
+            return $this->callOtherService('POST', '/service/update-service-data', $param);
+        }
+
+        public function deleteServiceData($model, $data)
+        {
+            $param = [
+                'model' => $model,
+                'data' => $data
+            ];
+
+            return $this->callOtherService('POST', '/service/delete-service-data', $param);
         }
     }

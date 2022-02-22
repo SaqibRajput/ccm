@@ -52,7 +52,7 @@
 //            'sensitive' => env('DB_SENSITIVE_CONNECTION', 'sensitive'),
 //
 //
-//            'ADDRESS_TYPE' => ['billing', 'address of use', 'company'],
+            'ADDRESS_TYPE' => ['billing', 'address of use', 'company'],
 //            'CREDIT_CARD_TYPE' => ['visa', 'mastercard', 'amex', 'discover'],
 //            'STATUS' => ['0', '1'],
 //
@@ -109,7 +109,7 @@
 //            ],
 //
 //            // ESG account default invoice payer
-//            'esg_invoice_payer' => env('ESG_DEFAULT_INVOICE_PAYER'),
+            'esg_invoice_payer' => env('ESG_DEFAULT_INVOICE_PAYER'),
 //
 //            // For AWS configuration
 //            'aws_email'    => env('AWS_EMAIL'),

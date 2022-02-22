@@ -1,5 +1,9 @@
 <?php
 
+    // need to create sub services via controller name
+    // to avoid file size increase
+    // to face code refactor
+    
     namespace CCM\Leads\Services;
 
     use Illuminate\Http\Request;
@@ -22,15 +26,19 @@
             return $this->callOtherService('POST', "/auth/api-authentication", [], ['Authorization' => app('request')->headers->get('Authorization')]);
         }
 
+        // login calls
         public function login(Request $request)
         {
             return $this->callOtherService('POST', '/auth/login', $request);
         }
+        // login calls
 
         /* User Controller */
-        public function users()
+        public function emailExist()
         {
-            return $this->callOtherService('GET', '/users');
+            return fa
+            // create function in authentication
+            return $this->callOtherService('GET', '/email-exist');
         }
 
         public function passed()

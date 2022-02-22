@@ -12,7 +12,7 @@
 
     class Controller extends LumenController
     {
-        public function __construct(Request $request)
+        public function __construct()
         {
 
         }
@@ -56,9 +56,100 @@
             dispatch(new AuditLog($request));
         }
 
-        public function getGenericData(Request $request)
+        public function getServiceData(Request $request)
         {
-            lumenLog('$request->all()');
+            lumenLog('getServiceData');
+            lumenLog($request->all());
+
+            $validator = validator::make($request->all(), [
+                'model' => 'required',
+                'where' => 'required|array',
+            ], []);
+
+            if ($validator->fails())
+            {
+                return createResponseData(422, false, $validator->errors());
+            }
+            try
+            {
+                // need to add columns here
+                $model = "App\\Models\\".$request->model;
+                $where = $request->where;
+                $tableData = $model::where($where)->get();
+
+                return createResponseData(200, true, '', $tableData);
+            }
+            catch(\Exception $ex)
+            {
+                return createResponseData(422, false, $ex->getMessage());
+            }
+        }
+
+        public function createServiceData(Request $request)
+        {
+            lumenLog('createServiceData');
+            lumenLog($request->all());
+
+            $validator = validator::make($request->all(), [
+                'model' => 'required',
+                'data' => 'required|array',
+                'where' => 'required|array',
+            ], []);
+
+            if ($validator->fails())
+            {
+                return createResponseData(422, false, $validator->errors());
+            }
+            try
+            {
+                $model = "App\\Models\\".$request->model;
+                $data = $request->data;
+                $where = $request->where;
+
+                $tableData = $model::where($where)->update($data);
+
+                return createResponseData(200, true, '', $tableData);
+            }
+            catch(\Exception $ex)
+            {
+                return createResponseData(422, false, $ex->getMessage());
+            }
+        }
+
+        public function updateServiceData(Request $request)
+        {
+            lumenLog('updateServiceData');
+            lumenLog($request->all());
+
+            $validator = validator::make($request->all(), [
+                'model' => 'required',
+                'data' => 'required|array',
+                'where' => 'required|array',
+            ], []);
+
+            if ($validator->fails())
+            {
+                return createResponseData(422, false, $validator->errors());
+            }
+            try
+            {
+                $model = "App\\Models\\".$request->model;
+                $data = $request->data;
+                $where = $request->where;
+
+                $tableData = $model::where($where)->update($data);
+
+                return createResponseData(200, true, '', $tableData);
+            }
+            catch(\Exception $ex)
+            {
+                return createResponseData(422, false, $ex->getMessage());
+            }
+        }
+
+        public function deleteServiceData(Request $request)
+        {
+            lumenLog('deleteServiceData');
             lumenLog($request->all());
 
             $validator = validator::make($request->all(), [
@@ -74,7 +165,8 @@
             {
                 $model = "App\\Models\\".$request->model;
                 $where = $request->where;
-                $tableData = $model::where($where)->get();
+
+                $tableData = $model::where($where)->delete();
 
                 return createResponseData(200, true, '', $tableData);
             }

@@ -236,3 +236,22 @@
             return is_string($string) && is_array(json_decode($string, true)) && (json_last_error() == JSON_ERROR_NONE) ? true : false;
         }
     }
+
+    /**
+     * Remove double strings
+     * @param (string) $str
+     * @return (string) $str
+     */
+    if (! function_exists('removeDoubleSpace'))
+    {
+        function removeDoubleSpace($str)
+        {
+            $str = str_replace('  ', ' ', $str);
+            if (strpos($str, '  ') !== false)
+            {
+                return removeDoubleSpace($str);
+            }
+
+            return $str;
+        }
+    }
