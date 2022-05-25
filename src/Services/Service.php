@@ -46,11 +46,14 @@
 
                 // check response is json to decode
                 $response = (isJson($content)) ? json_decode($content, true) : $content;
+
+                lumenLog($response);
+
             }
             catch (\Exception $ex)
             {
                 // response set as null to handle same in all project.
-                $response = null;
+                $response = $ex->getTrace();
 
                 lumenLog('Exception: callOtherService : Start');
                 lumenLog('$timeOut: '.$this->timeOut);
@@ -58,6 +61,7 @@
                 lumenLog('$endPoint: '.$endPoint);
                 lumenLog('$params: '.json_encode($request));
                 lumenLog($ex->getLine().' - '.$ex->getMessage());
+                lumenLog($ex->getTrace());
                 lumenLog('Exception: callOtherService : End');
             }
 
@@ -73,7 +77,7 @@
                 'with' => $with,
             ];
 
-            return $this->callOtherService('POST', '/service/get-service-data', $param);
+            return $this->callOtherService('POST', 'service/get-service-data', $param);
         }
 
         public function createServiceData($model, $data)
@@ -83,7 +87,7 @@
                 'data' => $data
             ];
 
-            return $this->callOtherService('POST', '/service/create-service-data', $param);
+            return $this->callOtherService('POST', 'service/create-service-data', $param);
         }
 
         public function updateServiceData($model, $data, $where)
@@ -94,16 +98,16 @@
                 'where' => $where
             ];
 
-            return $this->callOtherService('POST', '/service/update-service-data', $param);
+            return $this->callOtherService('POST', 'service/update-service-data', $param);
         }
 
-        public function deleteServiceData($model, $data)
+        public function deleteServiceData($model, $where)
         {
             $param = [
                 'model' => $model,
                 'data' => $data
             ];
 
-            return $this->callOtherService('POST', '/service/delete-service-data', $param);
+            return $this->callOtherService('POST', 'service/delete-service-data', $param);
         }
     }

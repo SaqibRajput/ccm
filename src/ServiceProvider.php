@@ -3,15 +3,21 @@
 namespace CCM\Leads;
 
 use Illuminate\Support\ServiceProvider as LumenServiceProvider;
+use CCM\Leads\Providers\ValidatorServiceProvider;
+use Route;
 
 class ServiceProvider extends LumenServiceProvider
 {
+    private $path = __DIR__.'/../';
     /**
      * Bootstrap the application services.
      */
     public function boot()
     {
+        $this->loadTranslationsFrom($this->path.'resources/lang', 'main');
+//        $this->app->register($this->path."src/Providers/ValidatorServiceProvider.php");
 
+//        $app->register(CCM\Leads\Providers\ValidatorServiceProvider::class);
     }
 
     /**
@@ -19,18 +25,23 @@ class ServiceProvider extends LumenServiceProvider
      */
     public function register()
     {
-        if (file_exists($helpers = __DIR__.'/Helpers/Helpers.php'))
-        {
-            require_once $helpers;
-        }
+        require_once $this->path.'src/Helpers/Helpers.php';
 
-        // Automatically apply the package configuration
-//        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'leads');
-        $this->mergeConfigFrom(__DIR__.'/../config/services.php', 'services');
+        $this->mergeConfigFrom($this->path.'config/bsgpsg.php', 'bsgpsg');
+        $this->mergeConfigFrom($this->path.'config/esg.php', 'esg');
+        $this->mergeConfigFrom($this->path.'config/main.php', 'main');
+        $this->mergeConfigFrom($this->path.'config/services.php', 'services');
+        $this->mergeConfigFrom($this->path.'config/signup.php', 'signup');
 
         // Register the main class to use with the facade
         $this->app->singleton('leads', function () {
             return new Leads;
         });
+
+        Route::group(['as' => 'service-data.' ], function ($router) {
+            include $this->path . 'routes/main.php';
+        });
+
+        $this->app->register(ValidatorServiceProvider::class);
     }
 }

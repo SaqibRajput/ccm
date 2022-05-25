@@ -9,6 +9,10 @@
             'base_uri'  =>  env('COMPANIES_SERVICE_BASE_URL', 'http://ccm-companies.local/'),
             'secret'  =>  env('COMPANIES_SERVICE_SECRET', 'qB20xFEIaSEW8ZAsEimIIn7mBA0x68LB0TcER1FE'),
         ],
+        'catalogs'   =>  [
+            'base_uri'  =>  env('CATALOGS_SERVICE_BASE_URL', 'http://ccm-catalogs.local/'),
+            'secret'  =>  env('CATALOGS_SERVICE_SECRET', 'qB20xFEIaSEW8ZAsEimIIn7mBA0x68LB0TcER1FE'),
+        ],
         'broadcast'   =>  [
             'base_uri'  =>  env('BROADCAST_SERVICE_BASE_URL', 'http://ccm-broadcast.local/'),
             'secret'  =>  env('BROADCAST_SERVICE_SECRET', 'qB20xFEIaSEW8ZAsEimIIn7mBA0x68LB0TcER1FE'),

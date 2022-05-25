@@ -8,8 +8,8 @@
      */
 
     return [
-        'skip_call' => env('ESG_SKIP_CALL', true),
-        'time_out' => env('ESG_TIME_OUT', 30),
+        'skip_call' => env('ESG_SKIP_CALL', false),
+        'time_out' => env('ESG_TIME_OUT', 10),
         'base_url' => env('ESG_URL'),
         'apis' => [
             'authentication' => [

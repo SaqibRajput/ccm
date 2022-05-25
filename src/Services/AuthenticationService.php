@@ -3,7 +3,7 @@
     // need to create sub services via controller name
     // to avoid file size increase
     // to face code refactor
-    
+
     namespace CCM\Leads\Services;
 
     use Illuminate\Http\Request;
@@ -36,7 +36,6 @@
         /* User Controller */
         public function emailExist()
         {
-            return fa
             // create function in authentication
             return $this->callOtherService('GET', '/email-exist');
         }

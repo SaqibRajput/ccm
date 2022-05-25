@@ -29,4 +29,9 @@
             return $this->callOtherService('POST', 'send-email', $param);
         }
 
+        public function sendNotification($param)
+        {
+            return $this->callOtherService('POST', 'send-notification', $param);
+        }
+
     }

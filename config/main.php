@@ -135,5 +135,5 @@
 //            'schema_reporting' => env('DB_REPORTING_DATABASE', NULL),
 //            'schema_cloud' => env('DB_CLOUD_DATABASE', NULL),
 //
-//            'encrypt_decrypt_key' => env('ENCRYPT_DECRYPT_KEY','SafnGWw49z9WbpMCLzpQGtENgj5BA3sG')
+            'encrypt_decrypt_key' => env('ENCRYPT_DECRYPT_KEY','SafnGWw49z9WbpMCLzpQGtENgj5BA3sG')
         ];

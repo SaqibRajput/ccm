@@ -1,6 +1,6 @@
 <?php
 
-    namespace CCM\Leads\Controller;
+    namespace CCM\Leads\Controllers;
 
     use Monolog\Formatter\JsonFormatter;
     use Illuminate\Log\Logger;

@@ -20,12 +20,6 @@
             $this->secret = config('services.catalogs.secret');
         }
 
-        public function isIndustryTypesVerified($industryTypesId)
-        {
-            $param = ['industryTypesId' => $industryTypesId];
-            return $this->callOtherService('POST', "/industry-types-verified", $param, ['Authorization' => app('request')->headers->get('Authorization')]);
-        }
-
         public function syncIndustryTypes()
         {
             $param = ['industryTypesId' => $industryTypesId];

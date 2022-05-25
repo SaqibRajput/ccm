@@ -25,11 +25,6 @@
 
         /* Authenticate Controller */
         // create new api for internal services call
-        public function getCompany($companyId)
-        {
-            $param = ['company_id' => $companyId];
-            return $this->callOtherService('GET', 'account/company/'.$companyId, $param);
-        }
 
         public function deleteIncompleteSignup($companyId)
         {
@@ -40,7 +35,7 @@
         // need to fix this function
         public function getCompaniesListByDomain($email)
         {
-            $param = ['emails' => $email];
+            $param = ['email' => $email];
             return $this->callOtherService('POST', 'account/companies-list-by-domain', $param);
         }
         // create new api for internal services call

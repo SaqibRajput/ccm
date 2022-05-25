@@ -2,11 +2,13 @@
 
     use GuzzleHttp\Client;
     use Illuminate\Http\Request;
+    use Illuminate\Encryption\Encrypter;
 
     if (! function_exists('createResponseData'))
     {
         function createResponseData($code = 200, $success = true, $message = '', $data = [], $pagination = false, $request = false, $skip = false)
         {
+            $skip = 1;
             $response = [];
             if (!$skip)
             {
@@ -253,5 +255,56 @@
             }
 
             return $str;
+        }
+    }
+
+    /*
+    * Generates encrypted value
+    *
+    * @param string $string
+    * @return string $text
+    */
+    if (!function_exists('encryptString'))
+    {
+
+        function encryptString($string)
+        {
+            try
+            {
+                $customKey      = config('main.encrypt_decrypt_key'); //32 character long
+                $newEncrypter   = new Encrypter($customKey,'AES-256-CBC');
+                $encrypted      = $newEncrypter->encrypt($string);
+
+            } catch (DecryptException $e)
+            {
+                $encrypted = $string;
+            }
+
+            return $encrypted;
+        }
+    }
+
+    /*
+    * Generates decrypted value
+    *
+    * @param string $string
+    * @return string $text
+    */
+    if (!function_exists('decryptString'))
+    {
+        function decryptString($encryptedValue)
+        {
+            $decrypted = '';
+            try
+            {
+                $customKey      = config('main.encrypt_decrypt_key'); //32 character long
+                $newDecrypted   = new Encrypter($customKey,'AES-256-CBC');
+                $decrypted      = $newDecrypted->decrypt($encryptedValue);
+
+            } catch (DecryptException $e)
+            {
+                $decrypted = $encryptedValue;
+            }
+            return $decrypted;
         }
     }

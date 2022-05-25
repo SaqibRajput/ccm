@@ -8,7 +8,7 @@
      */
 
     return [
-        'skip_call' => env('UPS_SKIP_CALL', true),
+        'skip_call' => env('UPS_SKIP_CALL', false),
         'time_out' => env('UPS_TIME_OUT', 10),
         'base_url' => env('UPS_URL'),
         'auth_url' => env('UPS_AUTH_URL'),
