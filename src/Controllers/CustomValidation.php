@@ -9,12 +9,12 @@
 
     namespace CCM\Leads\Controllers;
 
-    use App\Http\Controllers\Controller as BaseController;
+    use CCM\Leads\Controllers\Controller as LeadsController;
 
     use validator;
     use Illuminate\Http\Request;
 
-    class CustomValidation extends BaseController
+    class CustomValidation extends LeadsController
     {
         public static function execute(Request $request, $rule, $returnData = [], $messages = [], $attribute = [])
         {

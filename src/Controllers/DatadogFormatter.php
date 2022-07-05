@@ -2,10 +2,12 @@
 
     namespace CCM\Leads\Controllers;
 
+    use CCM\Leads\Controllers\Controller as LeadsController;
+
     use Monolog\Formatter\JsonFormatter;
     use Illuminate\Log\Logger;
 
-    class DatadogFormatter
+    class DatadogFormatter extends LeadsController
     {
         /**
          * Customize the given logger instance.

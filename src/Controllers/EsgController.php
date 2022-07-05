@@ -9,10 +9,11 @@
 
     namespace CCM\Leads\Controllers;
 
-    use App\Http\Controllers\Controller as BaseController;
+    use CCM\Leads\Controllers\Controller as LeadsController;
+
     use Illuminate\Http\Request;
 
-    class EsgController extends BaseController
+    class EsgController extends LeadsController
     {
         private $timeOut;
 

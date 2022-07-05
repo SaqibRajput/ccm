@@ -15,9 +15,6 @@ class ServiceProvider extends LumenServiceProvider
     public function boot()
     {
         $this->loadTranslationsFrom($this->path.'resources/lang', 'main');
-//        $this->app->register($this->path."src/Providers/ValidatorServiceProvider.php");
-
-//        $app->register(CCM\Leads\Providers\ValidatorServiceProvider::class);
     }
 
     /**
@@ -36,10 +33,6 @@ class ServiceProvider extends LumenServiceProvider
         // Register the main class to use with the facade
         $this->app->singleton('leads', function () {
             return new Leads;
-        });
-
-        Route::group(['as' => 'service-data.' ], function ($router) {
-            include $this->path . 'routes/main.php';
         });
 
         $this->app->register(ValidatorServiceProvider::class);

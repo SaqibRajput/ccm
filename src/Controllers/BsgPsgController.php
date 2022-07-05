@@ -9,10 +9,10 @@
 
     namespace CCM\Leads\Controllers;
 
-    use App\Http\Controllers\Controller as BaseController;
+    use CCM\Leads\Controllers\Controller as LeadsController;
 
 
-    class BsgPsgController extends BaseController
+    class BsgPsgController extends LeadsController
     {
         // U-1783618@U-1783618.com
         private $timeOut;
