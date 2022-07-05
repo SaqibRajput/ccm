@@ -2,7 +2,7 @@
 
 namespace CCM\Leads\Jobs;
 
-use CCM\Leads\Services\BroadcastService;
+use App\Services\EmailController;
 
 class SendEmail extends Job
 {
@@ -28,7 +28,7 @@ class SendEmail extends Job
         }
 
         $this->params = $params;
-        $this->broadcastService = new BroadcastService();
+        $this->broadcastService = new EmailController();
     }
 
     /**
@@ -40,9 +40,13 @@ class SendEmail extends Job
     {
         if($this->isObject)
         {
-//            $this->params = collect($this->params);
+        //    $this->params = collect($this->params);
         }
 
-        $this->broadcastService->sendEmail($this->params);
+        $this->params = collect($this->params);
+        
+        $this->broadcastService->index($this->params);
+
+        //$this->broadcastService->sendEmail($this->params);
     }
 }

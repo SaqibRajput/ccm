@@ -27,7 +27,7 @@ class ServiceProvider extends LumenServiceProvider
         $this->mergeConfigFrom($this->path.'config/bsgpsg.php', 'bsgpsg');
         $this->mergeConfigFrom($this->path.'config/esg.php', 'esg');
         $this->mergeConfigFrom($this->path.'config/main.php', 'main');
-        $this->mergeConfigFrom($this->path.'config/services.php', 'services');
+//        $this->mergeConfigFrom($this->path.'config/services.php', 'services');
         $this->mergeConfigFrom($this->path.'config/signup.php', 'signup');
 
         // Register the main class to use with the facade
