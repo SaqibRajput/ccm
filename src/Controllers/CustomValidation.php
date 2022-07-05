@@ -20,6 +20,9 @@
         {
             lumenLog('CustomValidation::execute');
 
+
+            
+
             try
             {
                 $validator = validator::make($request->all(), $rule, self::customMessages($messages), $attribute);
