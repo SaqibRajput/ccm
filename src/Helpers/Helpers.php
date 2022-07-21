@@ -17,16 +17,16 @@
     use Illuminate\Support\Arr;
 
     /**
-     * Create API response
-     * @param $code
-     * @param $success
-     * @param $message
-     * @param $data
-     * @param $pagination
-     * @param $request
-     * @param $skip
-     * @return array
-     **/
+    * Create API response
+    * @param $code
+    * @param $success
+    * @param $message
+    * @param $data
+    * @param $pagination
+    * @param $request
+    * @param $skip
+    * @return array
+    **/
     if (! function_exists('createResponseData')) {
         function createResponseData($code, $success, $message = '', $data = [], $pagination, Illuminate\Http\Request $request, $skip = false)
         {
@@ -99,13 +99,13 @@
             $response['status_code'] = $code;
             $response['success'] = $success;
             $response['message'] = $message;
-
+        
             if ($pagination) {
                 $response['pages'] = $pagination;
             }
-
+        
             $response['data'] = $data;
-
+        
             return $response;
         }
     }
@@ -150,7 +150,7 @@
     //     }
     // }
 
-
+  
 
     if (!function_exists('uniqueCode'))
     {
@@ -191,8 +191,8 @@
 
             return $domain;
         }
-    }
-
+    } 
+ 
 
     /**
      * Base 64 encode a string with url encode
@@ -303,247 +303,247 @@
         }
     }
 
-    /**
-     * Create Grid API response
-     *  @param (integer) $code
-     *  @param (bool) $success
-     *  @param (bool) $message
-     *  @param (array) $embedded
-     *  @param (array) $entities
-     *  @param (array) $pagination
-     **/
-    function createGridResponseData($code, $success, $message = '',$embedded = [], $entities = [],$pagination, Illuminate\Http\Request $request){
+/**
+ * Create Grid API response
+ *  @param (integer) $code
+ *  @param (bool) $success
+ *  @param (bool) $message
+ *  @param (array) $embedded
+ *  @param (array) $entities
+ *  @param (array) $pagination
+ **/
+function createGridResponseData($code, $success, $message = '',$embedded = [], $entities = [],$pagination, Illuminate\Http\Request $request){
 
-        $response = [];
+    $response = [];
 
-        $response['status_code'] = $code;
-        $response['success'] = $success;
-        $response['message'] = $message;
+    $response['status_code'] = $code;
+    $response['success'] = $success;
+    $response['message'] = $message;
 
-        if($pagination){
-            $response['pages'] = $pagination;
-        }
-
-        $response['embedded'] = $embedded;
-        $response['entities'] = $entities;
-
-        return $response;
+    if($pagination){
+        $response['pages'] = $pagination;
     }
 
-    /**
-     * Verifies if given parameter is json, incase of not json then aborts
-     *
-     * @param (string) $json
-     * @return
-     */
-    function isJsonRequestBody($jsonRequestBody)
-    {
-        if (!empty($jsonRequestBody) && empty(json_decode($jsonRequestBody))) { // if received json from raw body is not valid
-            return abort(400, 'Invalid json');
-        }
+    $response['embedded'] = $embedded;
+    $response['entities'] = $entities;
 
+    return $response;
+}
+
+/**
+ * Verifies if given parameter is json, incase of not json then aborts
+ *
+ * @param (string) $json
+ * @return
+ */
+function isJsonRequestBody($jsonRequestBody)
+{
+    if (!empty($jsonRequestBody) && empty(json_decode($jsonRequestBody))) { // if received json from raw body is not valid
+        return abort(400, 'Invalid json');
     }
 
+}
 
-    /**
-     * Base 64 encode a string with url encode
-     * @param $str
-     * @return string
-     */
-    function base64urlEncode($str) {
-        return rtrim(strtr(base64_encode($str), '+/', '-_'), '=');
+
+/**
+ * Base 64 encode a string with url encode
+ * @param $str
+ * @return string
+ */
+function base64urlEncode($str) {
+    return rtrim(strtr(base64_encode($str), '+/', '-_'), '=');
+}
+
+/**
+ * Base 64 decode a string with url encode
+ * @param $str
+ * @return string
+ */
+function base64urlDecode($str) {
+    return base64_decode(str_pad(strtr($str, '-_', '+/'), strlen($str) % 4, '=', STR_PAD_RIGHT));
+}
+
+/*
+ * Check if user have permission
+ * @param (string) $permission
+ * @param (string) $accessType
+ * @return (bool)
+ */
+function can($permission, $accessType) {
+
+    $userPermissions = app('request')->user()->getAllPermissionsFormAllRoles();
+    if ($userPermissions->get($permission) != $accessType && $userPermissions->get($permission) != "full_access") {
+        return false;
     }
 
-    /**
-     * Base 64 decode a string with url encode
-     * @param $str
-     * @return string
-     */
-    function base64urlDecode($str) {
-        return base64_decode(str_pad(strtr($str, '-_', '+/'), strlen($str) % 4, '=', STR_PAD_RIGHT));
-    }
+    return true;
+}
 
-    /*
-     * Check if user have permission
-     * @param (string) $permission
-     * @param (string) $accessType
-     * @return (bool)
-     */
-    function can($permission, $accessType) {
+/**
+ * Prepare or Repair criteria (to be used by fetch and export methods)
+ *
+ * @param array $criteria
+ * @return array|mixed
+ */
+function prepareCriteria ($criteria = []) {
+    $defaultCriteria = config('main.criteria');
 
-        $userPermissions = app('request')->user()->getAllPermissionsFormAllRoles();
-        if ($userPermissions->get($permission) != $accessType && $userPermissions->get($permission) != "full_access") {
-            return false;
-        }
+    if (!empty($criteria)) {
+        switch (gettype($criteria)) {
+            case 'array':
+                $criteria = array_merge($defaultCriteria, (array) $criteria);
 
-        return true;
-    }
-
-    /**
-     * Prepare or Repair criteria (to be used by fetch and export methods)
-     *
-     * @param array $criteria
-     * @return array|mixed
-     */
-    function prepareCriteria ($criteria = []) {
-        $defaultCriteria = config('main.criteria');
-
-        if (!empty($criteria)) {
-            switch (gettype($criteria)) {
-                case 'array':
-                    $criteria = array_merge($defaultCriteria, (array) $criteria);
-
-                    if (!empty($criteria['fs'])){
-                        $criteria['fs'] = array_filter($criteria['fs']);
-                    }
-
-                    if (!empty($criteria['disp'])){
-                        $criteria['disp'] = array_filter($criteria['disp']);
-                    }
-
-                    if (empty($criteria['r']) || (int) $criteria['r'] <= 0){
-                        $criteria['r'] = config('main.criteria.r');
-                    } else {
-                        $criteria['r'] = (int) $criteria['r'];
-                    }
-
-                    if (empty($criteria['o'])){
-                        $criteria['o'] = config('main.criteria.o');
-                    }
-
-                    if (isset($criteria['d']) && ((int) $criteria['d'] !== 1 && (int) $criteria['d'] !== 0)){
-                        $criteria['d'] = config('main.criteria.d');
-                    }
-
-                    break;
-                case 'string':
-                    $criteria = json_decode($criteria, true);
-
-                    if (empty($criteria['o'])){
-                        $criteria['o'] = config('main.criteria.o');
-                    }
-
-                    if (empty($criteria['r']) || (int) $criteria['r'] <= 0){
-                        $criteria['r'] = config('main.criteria.r');
-                    } else {
-                        $criteria['r'] = (int) $criteria['r'];
-                    }
-
-                    if (isset($criteria['d']) && ((int) $criteria['d'] !== 1 && (int) $criteria['d'] !== 0)){
-                        $criteria['d'] = config('main.criteria.d');
-                    }
-
-                    if (!empty($criteria['fs'])) {
-                        $criteria['fs'] = array_filter($criteria['fs']);
-                    } else {
-                        $criteria['fs'] = config('main.criteria.fs');
-                    }
-
-                    if (!empty($criteria['disp'])) {
-                        $criteria['disp'] = array_filter($criteria['disp']);
-                    } else {
-                        $criteria['disp'] = config('main.criteria.disp');
-                    }
-
-                    break;
-                default:
-                    $criteria = $defaultCriteria;
-                    break;
-            }
-        } else {
-            $criteria = $defaultCriteria;
-        }
-
-        // url-Decoding values of 'fs' key in Criteria recursively
-        if (isset($criteria['fs']) && !empty($criteria['fs'])) {
-            foreach ($criteria['fs'] as $key => $fs) {
-                if (is_array($fs)) {
-                    foreach ($fs as $i => $f) {
-                        $criteria['fs'][$key][$i] = rawurldecode($f);
-                    }
-                } else {
-                    $criteria['fs'][$key] = rawurldecode($fs);
+                if (!empty($criteria['fs'])){
+                    $criteria['fs'] = array_filter($criteria['fs']);
                 }
+
+                if (!empty($criteria['disp'])){
+                    $criteria['disp'] = array_filter($criteria['disp']);
+                }
+
+                if (empty($criteria['r']) || (int) $criteria['r'] <= 0){
+                    $criteria['r'] = config('main.criteria.r');
+                } else {
+                    $criteria['r'] = (int) $criteria['r'];
+                }
+
+                if (empty($criteria['o'])){
+                    $criteria['o'] = config('main.criteria.o');
+                }
+
+                if (isset($criteria['d']) && ((int) $criteria['d'] !== 1 && (int) $criteria['d'] !== 0)){
+                    $criteria['d'] = config('main.criteria.d');
+                }
+
+                break;
+            case 'string':
+                $criteria = json_decode($criteria, true);
+
+                if (empty($criteria['o'])){
+                    $criteria['o'] = config('main.criteria.o');
+                }
+
+                if (empty($criteria['r']) || (int) $criteria['r'] <= 0){
+                    $criteria['r'] = config('main.criteria.r');
+                } else {
+                    $criteria['r'] = (int) $criteria['r'];
+                }
+
+                if (isset($criteria['d']) && ((int) $criteria['d'] !== 1 && (int) $criteria['d'] !== 0)){
+                    $criteria['d'] = config('main.criteria.d');
+                }
+
+                if (!empty($criteria['fs'])) {
+                    $criteria['fs'] = array_filter($criteria['fs']);
+                } else {
+                    $criteria['fs'] = config('main.criteria.fs');
+                }
+
+                if (!empty($criteria['disp'])) {
+                    $criteria['disp'] = array_filter($criteria['disp']);
+                } else {
+                    $criteria['disp'] = config('main.criteria.disp');
+                }
+
+                break;
+            default:
+                $criteria = $defaultCriteria;
+                break;
+        }
+    } else {
+        $criteria = $defaultCriteria;
+    }
+
+    // url-Decoding values of 'fs' key in Criteria recursively
+    if (isset($criteria['fs']) && !empty($criteria['fs'])) {
+        foreach ($criteria['fs'] as $key => $fs) {
+            if (is_array($fs)) {
+                foreach ($fs as $i => $f) {
+                    $criteria['fs'][$key][$i] = rawurldecode($f);
+                }
+            } else {
+                $criteria['fs'][$key] = rawurldecode($fs);
             }
         }
-
-        return json_decode(json_encode($criteria));
     }
 
+    return json_decode(json_encode($criteria));
+} 
+ 
+ 
+ 
+ 
 
+/**
+ * Function to get Class name
+ * @return string
+*/  
+function getAbsClassName($object) {
+    $classNameWithNamespace = get_class($object);
 
-
-
-    /**
-     * Function to get Class name
-     * @return string
-     */
-    function getAbsClassName($object) {
-        $classNameWithNamespace = get_class($object);
-
-        if(substr($classNameWithNamespace, strrpos($classNameWithNamespace, '\\')+1) == "SendEmailCCMUserController") {
-            return "Send Emails";
-        }
-
-        return substr($classNameWithNamespace, strrpos($classNameWithNamespace, '\\')+1);
+    if(substr($classNameWithNamespace, strrpos($classNameWithNamespace, '\\')+1) == "SendEmailCCMUserController") {
+        return "Send Emails";
     }
 
+    return substr($classNameWithNamespace, strrpos($classNameWithNamespace, '\\')+1);
+}
 
 
 
-    /**
-     * Function that returns clean json format
-     * @return string
-     */
-    function jsonClean($json){
-        $str_response = mb_convert_encoding($json, 'utf-8', 'auto');
 
-        for ($i = 0; $i <= 31; ++$i) {
-            $str_response = str_replace(chr($i), "", $str_response);
-        }
-        $str_response = str_replace(chr(127), "", $str_response);
+/**
+ * Function that returns clean json format
+ * @return string
+*/  
+function jsonClean($json){
+    $str_response = mb_convert_encoding($json, 'utf-8', 'auto');
 
-        if (0 === strpos(bin2hex($str_response), 'efbbbf')) {
-            $str_response = substr($str_response, 3);
-        }
+    for ($i = 0; $i <= 31; ++$i) {
+        $str_response = str_replace(chr($i), "", $str_response);
+    }
+    $str_response = str_replace(chr(127), "", $str_response);
 
-        return $str_response;
+    if (0 === strpos(bin2hex($str_response), 'efbbbf')) {
+        $str_response = substr($str_response, 3);
     }
 
-
-    /**
-     * Create User Specific Logs
-     *
-     * @param $method
-     * @param $endPoint
-     * @param $data
-     * @param $headers
-     * @param Request $request
-     */
-    function setApiLog($method, $endPoint, $data, $headers, Request $request)
-    {
-        $auth = $request->user();
-
-        $user_id = !empty($auth->id) ? $auth->id : 0;
-        $first_name = !empty($auth->first_name) ? $auth->first_name : 'System';
-        $last_name = !empty($auth->last_name) ? $auth->last_name : '';
-
-        $data['Request_headers'] = $headers;
-
-        $handler = new RotatingFileHandler(storage_path() . '/logs/' . $user_id . '.log', 0, Logger::INFO, true, 0664);
-        $logger = new Logger($first_name . " " . $last_name);
-
-        $handler->setFilenameFormat('{date}_{filename}', 'Y_m_d');
-        $logger->pushHandler($handler);
-        $array = [$method . ' - ' . $endPoint, json_encode($data)];
-
-        // $logger->addError('API-Response', $array);
-        $logger->error('API-Response', $array);
-    }
+    return $str_response;
+}
 
 
-    /**
-     * Function that trim values
+/**
+ * Create User Specific Logs
+ *
+ * @param $method
+ * @param $endPoint
+ * @param $data
+ * @param $headers
+ * @param Request $request
+ */
+function setApiLog($method, $endPoint, $data, $headers, Request $request)
+{
+    $auth = $request->user();
+
+    $user_id = !empty($auth->id) ? $auth->id : 0;
+    $first_name = !empty($auth->first_name) ? $auth->first_name : 'System';
+    $last_name = !empty($auth->last_name) ? $auth->last_name : '';
+
+    $data['Request_headers'] = $headers;
+
+    $handler = new RotatingFileHandler(storage_path() . '/logs/' . $user_id . '.log', 0, Logger::INFO, true, 0664);
+    $logger = new Logger($first_name . " " . $last_name);
+
+    $handler->setFilenameFormat('{date}_{filename}', 'Y_m_d');
+    $logger->pushHandler($handler);
+    $array = [$method . ' - ' . $endPoint, json_encode($data)];
+
+    // $logger->addError('API-Response', $array);
+    $logger->error('API-Response', $array);
+}
+
+
+   /**
+     * Function that trim values   
      * @param $data
      * @param $value
      * @return mixed
@@ -568,13 +568,13 @@
     }
 
 
-    /**
-     * Function that trim values
-     * @param $data
-     * @param $value
-     * @return mixed
-     */
-    function attrite($request, $data, $is_response = false){
+/**
+* Function that trim values   
+* @param $data
+* @param $value
+* @return mixed
+*/
+function attrite($request, $data, $is_response = false){
         if (is_array($request))
         {
             foreach ($request as $key => $value)
@@ -594,136 +594,136 @@
                     $request[$key] = $translated;
                 }
             }
-        }
-        return $request;
+        } 
+    return $request;
+}    
+ 
+
+ 
+
+/**
+* Method to change the First word of status
+*
+* @param string $status
+* @return string
+*/
+
+if (! function_exists('setOrderState'))
+{
+    function setOrderState($status = NULL){
+        $state = false;
+        if(strtolower($status) === strtolower('Fulfilled'))
+            $state = 'Ready';
+        if(strtolower($status) === strtolower('Pending'))
+            $state = 'System Processing';
+        if(strtolower($status) === strtolower('Cancelled'))
+            $state = 'Ready';
+        \Log::info("*setOrderState* : (status: '".$status."') state => '".$state."'");
+        return $state;
     }
+}
 
 
-
-
-    /**
-     * Method to change the First word of status
-     *
-     * @param string $status
-     * @return string
-     */
-
-    if (! function_exists('setOrderState'))
-    {
-        function setOrderState($status = NULL){
-            $state = false;
-            if(strtolower($status) === strtolower('Fulfilled'))
-                $state = 'Ready';
-            if(strtolower($status) === strtolower('Pending'))
-                $state = 'System Processing';
-            if(strtolower($status) === strtolower('Cancelled'))
-                $state = 'Ready';
-            \Log::info("*setOrderState* : (status: '".$status."') state => '".$state."'");
-            return $state;
-        }
+/**
+* Method to change the First word of status
+*
+* @param string $status
+* @return string
+*/
+if (! function_exists('setOrderLineItemState'))
+{
+    function setOrderLineItemState($status = NULL){
+        $state = false;
+        if(strtolower($status) === strtolower('Fulfilled'))
+            $state = 'Ready';
+        if(strtolower($status) === strtolower('Pending'))
+            $state = 'System Processing';
+        if(strtolower($status) === strtolower('Cancelled'))
+            $state = 'Ready';
+        \Log::info("*setOrderLineItemState* : (status: '".$status."') state => '".$state."'");
+        return $state;
     }
+}
 
+/**
+* Method to return Order state based on integration type and status
+*
+* @param string $status
+* @param string $integration_type
+* @return string
+*/
 
-    /**
-     * Method to change the First word of status
-     *
-     * @param string $status
-     * @return string
-     */
-    if (! function_exists('setOrderLineItemState'))
-    {
-        function setOrderLineItemState($status = NULL){
-            $state = false;
-            if(strtolower($status) === strtolower('Fulfilled'))
-                $state = 'Ready';
-            if(strtolower($status) === strtolower('Pending'))
-                $state = 'System Processing';
-            if(strtolower($status) === strtolower('Cancelled'))
-                $state = 'Ready';
-            \Log::info("*setOrderLineItemState* : (status: '".$status."') state => '".$state."'");
-            return $state;
-        }
+if (! function_exists('setTenantState'))
+{
+    function setTenantState($status = NULL, $integration_type = NULL){
+        $state = false;
+        if(strtolower($status) === strtolower('Pending') && strtolower($integration_type) === strtolower('automate'))
+            $state = 'System Processing';
+        else if(strtolower($status) === strtolower('Pending') && strtolower($integration_type) === strtolower('manual'))
+            $state = 'Waiting for Input';
+        else if(strtolower($status) === strtolower('Active') && strtolower($integration_type) === strtolower('automate'))
+            $state = 'Ready';
+        else if(strtolower($status) === strtolower('Active') && strtolower($integration_type) === strtolower('manual'))
+            $state = 'Ready';
+        \Log::info("*setTenantState* : (status: '".$status."', integration_type: '".$integration_type."') state => '".$state."'");
+        return $state;
     }
+}
 
-    /**
-     * Method to return Order state based on integration type and status
-     *
-     * @param string $status
-     * @param string $integration_type
-     * @return string
-     */
+/**
+* Method to return subscription state based on integration_method and status
+*
+* @param string $status
+* @param string $integration_method
+* @return string
+*/
 
-    if (! function_exists('setTenantState'))
-    {
-        function setTenantState($status = NULL, $integration_type = NULL){
-            $state = false;
-            if(strtolower($status) === strtolower('Pending') && strtolower($integration_type) === strtolower('automate'))
-                $state = 'System Processing';
-            else if(strtolower($status) === strtolower('Pending') && strtolower($integration_type) === strtolower('manual'))
-                $state = 'Waiting for Input';
-            else if(strtolower($status) === strtolower('Active') && strtolower($integration_type) === strtolower('automate'))
-                $state = 'Ready';
-            else if(strtolower($status) === strtolower('Active') && strtolower($integration_type) === strtolower('manual'))
-                $state = 'Ready';
-            \Log::info("*setTenantState* : (status: '".$status."', integration_type: '".$integration_type."') state => '".$state."'");
-            return $state;
-        }
+if (! function_exists('setSubscriptionState'))
+{
+    function setSubscriptionState($status = NULL, $integration_method = NULL){
+
+        $forReadyStateStatuses = [1,2,3,4,5,6];
+
+        $state = false;
+
+        // for status (active, terminated, expired, cancelled, freeze) and integration may be manual or auto
+        if(in_array($status, $forReadyStateStatuses))
+            $state = 'Ready';
+
+        // pending/auto
+        else if($status === 0 && (strtolower($integration_method) === strtolower('Automatic') || strtolower($integration_method) === strtolower('automate')))
+            $state = 'System Processing';
+        // pending/manual
+        else if($status === 0 && strtolower($integration_method) === strtolower('manual'))
+            $state = 'Waiting for Input';
+/*
+        // suspended/manual
+        else if($status === 2 && strtolower($integration_method) === strtolower('manual'))
+            $state = 'Suspended';
+        // suspended/auto
+        else if($status === 2 && (strtolower($integration_method) === strtolower('Automatic') || strtolower($integration_method) === strtolower('automate')))
+            $state = 'Ready';
+*/
+        /*
+        // currently this never be checked because it is already in array of ready state so can be removed from here
+        // freeze/manual
+        else if($status === 6 && strtolower($integration_method) === strtolower('manual'))
+            $state = 'Ready'; // this need to be Freezed but in sheet it is ready
+        // freeze/auto
+        else if($status === 6 && (strtolower($integration_method) === strtolower('Automatic') || strtolower($integration_method) === strtolower('automate')))
+            $state = 'Ready';
+        */
+
+        \Log::info("*setSubscriptionState* : (status: '".$status."', integration_method: '".$integration_method."') state => '".$state."'");
+
+        return $state;
     }
+}
 
-    /**
-     * Method to return subscription state based on integration_method and status
-     *
-     * @param string $status
-     * @param string $integration_method
-     * @return string
-     */
-
-    if (! function_exists('setSubscriptionState'))
-    {
-        function setSubscriptionState($status = NULL, $integration_method = NULL){
-
-            $forReadyStateStatuses = [1,2,3,4,5,6];
-
-            $state = false;
-
-            // for status (active, terminated, expired, cancelled, freeze) and integration may be manual or auto
-            if(in_array($status, $forReadyStateStatuses))
-                $state = 'Ready';
-
-            // pending/auto
-            else if($status === 0 && (strtolower($integration_method) === strtolower('Automatic') || strtolower($integration_method) === strtolower('automate')))
-                $state = 'System Processing';
-            // pending/manual
-            else if($status === 0 && strtolower($integration_method) === strtolower('manual'))
-                $state = 'Waiting for Input';
-            /*
-                    // suspended/manual
-                    else if($status === 2 && strtolower($integration_method) === strtolower('manual'))
-                        $state = 'Suspended';
-                    // suspended/auto
-                    else if($status === 2 && (strtolower($integration_method) === strtolower('Automatic') || strtolower($integration_method) === strtolower('automate')))
-                        $state = 'Ready';
-            */
-            /*
-            // currently this never be checked because it is already in array of ready state so can be removed from here
-            // freeze/manual
-            else if($status === 6 && strtolower($integration_method) === strtolower('manual'))
-                $state = 'Ready'; // this need to be Freezed but in sheet it is ready
-            // freeze/auto
-            else if($status === 6 && (strtolower($integration_method) === strtolower('Automatic') || strtolower($integration_method) === strtolower('automate')))
-                $state = 'Ready';
-            */
-
-            \Log::info("*setSubscriptionState* : (status: '".$status."', integration_method: '".$integration_method."') state => '".$state."'");
-
-            return $state;
-        }
-    }
+ 
 
 
-
-
-    /**
+/**
      * Compute the start and end date of some fixed o relative quarter in a specific year.
      * @param mixed $quarter  Integer from 1 to 4 or relative string value:
      *                        'this', 'current', 'previous', 'first' or 'last'.
@@ -792,9 +792,9 @@
     /**
      * Method that replaces subject
      * @param $subject
-     * @return $string
+     * @return $string 
      */
-
+    
     if (! function_exists('getOnlySubject'))
     {
         function getOnlySubject($subject)
@@ -816,7 +816,7 @@
     /**
      * Method that replaces delimiters from email string
      * @param $email_string
-     * @return array
+     * @return array 
      */
     if (! function_exists('filterEmails')){
         function filterEmails($email_string) {
@@ -827,10 +827,10 @@
     }
 
 
-    /**
+     /**
      * Method that appends mentioned delimiters
      * @param $email_string
-     * @return string
+     * @return string 
      */
 
     if (! function_exists('filterEmailString')){
@@ -842,11 +842,11 @@
         }
     }
 
-    /**
-     * Remove double strings
-     * @param (string) $str
-     * @return (string) $str
-     */
+     /**
+    * Remove double strings
+    * @param (string) $str
+    * @return (string) $str
+    */
     function removeDoubleSpace($str)
     {
         $str = str_replace('  ', ' ', $str);
@@ -858,10 +858,10 @@
     }
 
     /**
-     * Remove Provider Custom Message
-     * @param  $provider_custom_message
-     * @return (string) $str
-     */
+    * Remove Provider Custom Message
+    * @param  $provider_custom_message
+    * @return (string) $str
+    */
     function cleanProviderCustomMessage($provider_custom_message = null){
         if($provider_custom_message != null && $provider_custom_message != ''){
             $provider_custom_message = trim($provider_custom_message);
@@ -885,10 +885,10 @@
          * @param  string  $end
          * @return string
          */
-        function str_limit($value, $limit = 100, $end = '...')
-        {
-            return Str::limit($value, $limit, $end);
-        }
+            function str_limit($value, $limit = 100, $end = '...')
+            {
+                return Str::limit($value, $limit, $end);
+            }
     }
 
 
@@ -918,10 +918,10 @@
          * @param  string|array|null  $key
          * @return array
          */
-        function array_pluck($array, $value, $key = null)
-        {
-            return Arr::pluck($array, $value, $key);
-        }
+            function array_pluck($array, $value, $key = null)
+            {
+                return Arr::pluck($array, $value, $key);
+            }
     }
 
     if (! function_exists('array_collapse')) {
@@ -931,10 +931,10 @@
          * @param  array  $array
          * @return array
          */
-        function array_collapse($array)
-        {
-            return Arr::collapse($array);
-        }
+            function array_collapse($array)
+            {
+                return Arr::collapse($array);
+            }
     }
 
 
@@ -948,10 +948,10 @@
          *
          * @deprecated Str::title() should be used directly instead. Will be removed in Laravel 5.9.
          */
-        function title_case($value)
-        {
-            return Str::title($value);
-        }
+            function title_case($value)
+            {
+                return Str::title($value);
+            }
     }
 
 
@@ -961,13 +961,13 @@
      * @param $params
      * @return void
      */
-    function sendEmailWithQueue($params)
-    {
-        dispatch(new SendEmail($params));
-    }
+    // function sendEmailWithQueue($params)
+    // {
+    //     dispatch(new SendEmail($params));
+    // }
 
 
-    /**
+     /**
      * Convert minutes to days
      * @param (string) $startDate
      * @param (int) $minutes
@@ -1034,35 +1034,30 @@
             return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
         }
     }
-
+    
 
     /**
-     * Generates unique id as per required length/limit
-     *
-     * @param string $method
-     * @return string $endPoint
-     * @return string $params
-     * @return collection
-     */
+    * Generates unique id as per required length/limit
+    *
+    * @param string $method
+    * @return string $endPoint
+    * @return string $params
+    * @return collection
+    */
     if (!function_exists('curlRequest')) {
 
         function curlRequest($method, $endPoint, $params = [],$curlThroughPackage = true)
         {
-            lumenLog("**************** skip all curl calls ****************");
-            $response = ['success' => false];
-
-            return $response;
-
-
+            $response = null;
             if($curlThroughPackage){ // when guzzle or any package is used
                 try{
                     $client = new Client();
                     $response = $client->request($method, $endPoint, $params);
                 }catch(\Throwable $e){
-                    if($log_reader = getRequestLogData("Exception",$method, $endPoint, $params,$e)){
-                        readRequestLog($log_reader);
-                    }
-                    throw $e;
+                   if($log_reader = getRequestLogData("Exception",$method, $endPoint, $params,$e)){
+                       readRequestLog($log_reader);
+                   }
+                   throw $e;
                 }
             }else{
                 if("HEAD" == $method ){ // when core curl is used without any package
@@ -1079,14 +1074,14 @@
                     $response['statusCode'] = $httpCode;
                     $response['contentType'] = $contentType;
                     $response['content'] = [];
-
+    
                 }else if("POST" == $method){
                     \Log::info('post condition');
                     $curl = curl_init();
                     curl_setopt_array($curl, $params);
                     $response = curl_exec($curl);
                     curl_close($curl);
-
+    
                 }else if("GET" == $method){
                     $ch = curl_init($endPoint);
                     curl_setopt($ch, CURLOPT_URL, $endPoint);
@@ -1094,131 +1089,131 @@
                     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                     $response = curl_exec ($ch);
                     curl_close($ch);
-
+    
                 }
             }
-
-            try{
-                if($log_reader = getRequestLogData("POST",$method, $endPoint, $params,$response,$curlThroughPackage)){
-                    readRequestLog($log_reader);
-                }
-            }catch(\Exception $e){
-                \Log::error($e->getMessage());
-                return $response;
-            }catch (\Throwable $t) {
-                \Log::error($t->getMessage());
-                return $response;
+    
+           try{
+               if($log_reader = getRequestLogData("POST",$method, $endPoint, $params,$response,$curlThroughPackage)){
+                   readRequestLog($log_reader);
+               }
+           }catch(\Exception $e){
+               \Log::error($e->getMessage());
+               return $response;
+           }catch (\Throwable $t) {
+               \Log::error($t->getMessage());
+               return $response;
+           }
+    
+                    return $response;
             }
-
-            return $response;
         }
-    }
 
 
-    /**
-     * Method to generate logs
-     *
-     * @param string $position
-     * @return string $method
-     * @return string $endPoint
-     * @return string $params
-     * @return string $response
-     * @return string $curlThroughPackage
-     * @return array
-     */
+        /**
+        * Method to generate logs
+        *
+        * @param string $position
+        * @return string $method
+        * @return string $endPoint
+        * @return string $params
+        * @return string $response
+        * @return string $curlThroughPackage
+        * @return array
+        */
 
-    if (!function_exists('getRequestLogData')) {
-        function getRequestLogData($position = "PRE",$method, $endPoint, $params,$response = null,$curlThroughPackage = true){
-
-            $userId = \App\Http\Controllers\Controller::$requestLogUserId;
-            $userIP = \App\Http\Controllers\Controller::$requestLogUserIP;
-            $endpointDetail = getEndpointName($endPoint);
-
-            $log_reader = [
-                'endpoint' => $endPoint,
-                'endpoint_name' => !empty($endpointDetail['endpointName']) ? $endpointDetail['endpointName'] : 'N/A',
-                'method' => $method,
-                'params' => $params,
-                'date' => Carbon::now(),
-                'user' => Auth::check() ? Auth::user()->id : ( !empty($userId) ? $userId : null ),
-                'portal_type' => !empty($endPoint) ? (!empty($endpointDetail['portalType']) ? $endpointDetail['portalType'] : "N/A") : "N/A",
-                //                'portal_type' => !empty($endPoint) ? RequestLogReader::getExternalPortalType($endPoint) : "N/A",
-                'ip_address' => !empty($userIP) ? $userIP : null ,
-                'agent' => 'CURL',
-            ];
-
-            if("PRE" == $position){
-                return $log_reader;
-            }else if("Exception" == $position){
-                $e = $response;
-                return array_merge($log_reader,[
-                    'response' => null,
-                    'response_data' => json_encode($e->getMessage()),
-                    'headers' => [],
-                    'statusCode' => $e->getCode(),
-                    'request_type' => RequestLogReader::EXTERNAL_REQUEST_TYPE,
-
-                ]);
-            }else if(RequestLogReader::RIVERSEND_CONNECTION == $position){
-                return array_merge($log_reader,[
-                    'statusCode' => isset($response["status"]) ? $response['status'] : 0,
-                    'headers' => NULL,
-                    'agent' => 'Application',
-                    'params' => ["table" => $params],
-                    'response_data' => isset($response["data"]) ? $response['data'] : [],
-                    'request_type' =>  RequestLogReader::EXTERNAL_REQUEST_TYPE,
-                    'portal_type' => RequestLogReader::RIVERSEND_CONNECTION,
-                    'method' => 'DB Connectivity',
-                ]);
-
-            }
-            else if('log' == $position){
-                return array_merge($log_reader,[
-                    'statusCode' => 200,
-                    'headers' => NULL,
-                    'agent' => 'Application',
-                    'params' => ["table" => $params],
-                    'response_data' => $response,
-                    'request_type' =>  RequestLogReader::INTERNAL_REQUEST_TYPE,
-                    'portal_type' => 'Application',
-                    'method' => 'Backend Call'
-                ]);
-
-            }
-            else if("POST" == $position){
-                if($curlThroughPackage){
-                    if(is_object($response) && "GuzzleHttp\Psr7\Response" == get_class($response)){ // if class id this GuzzleHttp\Psr7\Response
-                        $log_reader['statusCode'] = $response->getStatusCode();
-                        $log_reader['headers'] = $response->getHeaders();
-                        $log_reader['response_data'] = json_decode($response->getBody(),true);
+        if (!function_exists('getRequestLogData')) {
+            function getRequestLogData($position = "PRE",$method, $endPoint, $params,$response = null,$curlThroughPackage = true){
+    
+                $userId = \App\Http\Controllers\Controller::$requestLogUserId;
+                $userIP = \App\Http\Controllers\Controller::$requestLogUserIP;
+                $endpointDetail = getEndpointName($endPoint);
+    
+                $log_reader = [
+                    'endpoint' => $endPoint,
+                    'endpoint_name' => !empty($endpointDetail['endpointName']) ? $endpointDetail['endpointName'] : 'N/A',
+                    'method' => $method,
+                    'params' => $params,
+                    'date' => Carbon::now(),
+                    'user' => Auth::check() ? Auth::user()->id : ( !empty($userId) ? $userId : null ),
+                    'portal_type' => !empty($endPoint) ? (!empty($endpointDetail['portalType']) ? $endpointDetail['portalType'] : "N/A") : "N/A",
+    //                'portal_type' => !empty($endPoint) ? RequestLogReader::getExternalPortalType($endPoint) : "N/A",
+                    'ip_address' => !empty($userIP) ? $userIP : null ,
+                    'agent' => 'CURL',
+                ];
+    
+                if("PRE" == $position){
+                    return $log_reader;
+                }else if("Exception" == $position){
+                    $e = $response;
+                    return array_merge($log_reader,[
+                        'response' => null,
+                        'response_data' => json_encode($e->getMessage()),
+                        'headers' => [],
+                        'statusCode' => $e->getCode(),
+                        'request_type' => RequestLogReader::EXTERNAL_REQUEST_TYPE,
+    
+                    ]);
+                }else if(RequestLogReader::RIVERSEND_CONNECTION == $position){
+                    return array_merge($log_reader,[
+                        'statusCode' => isset($response["status"]) ? $response['status'] : 0,
+                        'headers' => NULL,
+                        'agent' => 'Application',
+                        'params' => ["table" => $params],
+                        'response_data' => isset($response["data"]) ? $response['data'] : [],
+                        'request_type' =>  RequestLogReader::EXTERNAL_REQUEST_TYPE,
+                        'portal_type' => RequestLogReader::RIVERSEND_CONNECTION,
+                        'method' => 'DB Connectivity',
+                    ]);
+    
+                }
+                else if('log' == $position){
+                    return array_merge($log_reader,[
+                        'statusCode' => 200,
+                        'headers' => NULL,
+                        'agent' => 'Application',
+                        'params' => ["table" => $params],
+                        'response_data' => $response,
+                        'request_type' =>  RequestLogReader::INTERNAL_REQUEST_TYPE,
+                        'portal_type' => 'Application',
+                        'method' => 'Backend Call'
+                    ]);
+    
+                }
+                else if("POST" == $position){
+                    if($curlThroughPackage){
+                        if(is_object($response) && "GuzzleHttp\Psr7\Response" == get_class($response)){ // if class id this GuzzleHttp\Psr7\Response
+                            $log_reader['statusCode'] = $response->getStatusCode();
+                            $log_reader['headers'] = $response->getHeaders();
+                            $log_reader['response_data'] = json_decode($response->getBody(),true);
+                            $log_reader['request_type'] = RequestLogReader::EXTERNAL_REQUEST_TYPE;
+                            $response->getBody()->rewind();
+                            return $log_reader;
+                        }
+    
+                    }else{
+                        $log_reader['headers'] = [];
+                        $log_reader['response_data'] = $response;
+                        $log_reader['statusCode'] = isset($response['statusCode'])?$response['statusCode'] : ($response ? 200:  0);
                         $log_reader['request_type'] = RequestLogReader::EXTERNAL_REQUEST_TYPE;
-                        $response->getBody()->rewind();
                         return $log_reader;
                     }
-
-                }else{
+                }else if("MES" == $position || "WORLD PAY" == $position){
                     $log_reader['headers'] = [];
                     $log_reader['response_data'] = $response;
                     $log_reader['statusCode'] = isset($response['statusCode'])?$response['statusCode'] : ($response ? 200:  0);
                     $log_reader['request_type'] = RequestLogReader::EXTERNAL_REQUEST_TYPE;
+                    $log_reader['portal_type'] = $position;
+    
                     return $log_reader;
                 }
-            }else if("MES" == $position || "WORLD PAY" == $position){
-                $log_reader['headers'] = [];
-                $log_reader['response_data'] = $response;
-                $log_reader['statusCode'] = isset($response['statusCode'])?$response['statusCode'] : ($response ? 200:  0);
-                $log_reader['request_type'] = RequestLogReader::EXTERNAL_REQUEST_TYPE;
-                $log_reader['portal_type'] = $position;
-
-                return $log_reader;
+                return false;
+    
             }
-            return false;
-
-        }
-    }
+        } 
 
 
-    /**
+          /**
      * @param $salesRepAB
      * @param $salesDivision
      * @return bool|mixed|string
@@ -1257,17 +1252,17 @@
 
         function encryptString($string)
         {
-            try {
+            try { 
 
                 $cipher_method = 'AES-256-CBC';
-                $enc_key = config('main.encrypt_decrypt_key_1');
-                $enc_iv = config('main.encrypt_decrypt_key_2');
-
-                $encrypted = openssl_encrypt($string, $cipher_method, $enc_key, 0, $enc_iv);
+                $enc_key = config('main.encrypt_decrypt_key_1'); 
+                $enc_iv = config('main.encrypt_decrypt_key_2'); 
+                
+                $encrypted = openssl_encrypt($string, $cipher_method, $enc_key, 0, $enc_iv); 
 
             } catch (DecryptException $e) {
-                //In case of any exception return the plain text
-                $encrypted = $string;
+                 //In case of any exception return the plain text
+                 $encrypted = $string;
             }
 
             return $encrypted;
@@ -1283,17 +1278,17 @@
     if (!function_exists('decryptString')) {
         function decryptString($encryptedValue)
         {
-            try {
+            try {        
 
-                $enc_key = config('main.encrypt_decrypt_key_1');
-                $enc_iv = config('main.encrypt_decrypt_key_2');
+                $enc_key = config('main.encrypt_decrypt_key_1'); 
+                $enc_iv = config('main.encrypt_decrypt_key_2'); 
                 $cipher_method = 'AES-256-CBC';
 
-                $decrypted = openssl_decrypt($encryptedValue, $cipher_method, $enc_key, 0, $enc_iv);
+                $decrypted = openssl_decrypt($encryptedValue, $cipher_method, $enc_key, 0, $enc_iv);                  
 
             } catch (DecryptException $e) {
-                //In case of any exception return the plain text
-                $decrypted = $encryptedValue;
+                 //In case of any exception return the plain text
+                 $decrypted = $encryptedValue;
             }
 
             return $decrypted;
@@ -1325,12 +1320,12 @@
     }
 
 
-    /*
-   * provide array to get valid phone number
-   *
-   * @param array $phones
-   * @return string $valid_phone
-   */
+     /*
+    * provide array to get valid phone number
+    *
+    * @param array $phones
+    * @return string $valid_phone
+    */
 
     if (!function_exists('getValidPhone')) {
         function getValidPhone($phones)
@@ -1418,13 +1413,13 @@
      *
      * @param $params
      * @return void
-     */
+    */
     function syncCategoriesWithQueue($params)
     {
         dispatch(new SyncCategories($params));
     }
 
-    /**
+     /**
      * Sync Service with Queue
      *
      * @param $params
@@ -1463,10 +1458,10 @@
         }
 
         return $subscriptionEndDate;
-    }
+    } 
 
 
-    /**
+   /**
      * Get error detail
      * @param $data
      * @return mixed
@@ -1512,9 +1507,9 @@
                 default:
                     $errorDetail['error_code'] =  '';
                     $errorDetail['error_description'] =  '';
-            }
+                }
 
-            return $errorDetail;
-        }
-    }
-
+                return $errorDetail;
+       }
+   }
+        
