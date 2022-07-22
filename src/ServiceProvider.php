@@ -14,7 +14,7 @@ class ServiceProvider extends LumenServiceProvider
      */
     public function boot()
     {
-        $this->loadTranslationsFrom($this->path.'resources/lang', 'main');
+        $this->loadTranslationsFrom($this->path.'resources/lang', 'leads');
     }
 
     /**
