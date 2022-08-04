@@ -35,6 +35,10 @@ class ServiceProvider extends LumenServiceProvider
             return new Leads;
         });
 
+        Route::group(['as' => '' ], function ($router) {
+            include $this->path . 'routes/main.php';
+        });
+        
         $this->app->register(ValidatorServiceProvider::class);
     }
 }
