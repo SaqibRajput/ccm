@@ -11,7 +11,7 @@
 namespace CCM\Leads\Controllers;
 
 use CCM\Leads\Controllers\Controller as LeadsController;
-
+use Component\CatalogComponent\App\Http\Controllers\DatabasePriceController;
 use Illuminate\Http\Request;
 use GuzzleHttp\Exception\GuzzleException;
 use PhpOffice\PhpSpreadsheet\Shared\OLE\PPS;
@@ -37,11 +37,11 @@ class EsgController extends LeadsController {
         try
         {
             $authResponse = $this->authentication();
-
+            
             if ($authResponse['success'])
                 {
-                $authToken      = $authResponse['data']['access_token'];
 
+                $authToken      = $authResponse['data']['access_token']; 
                 $searchResponse = $this->search( ['email' => $email, 'auth_token' => $authToken] );
 
                 if ($searchResponse['success'])
@@ -78,7 +78,7 @@ class EsgController extends LeadsController {
      */
     public function authentication()
     {
-        $response = [ 'success' => false ];
+        $response = [ 'success' => false , 'status_code' => 401];
 
         try
         {
@@ -95,7 +95,7 @@ class EsgController extends LeadsController {
             if ($response != null && $response->getStatusCode() == 200)
             {
                 $response = [
-                    'success' => true,
+                    'success' => true, 
                     'data' => json_decode($response->getBody()->getContents(), true),
                 ];
             }
@@ -191,11 +191,124 @@ class EsgController extends LeadsController {
     }
 
     /**
+     * Get Price Call from db or ESG 
+     * @params $request
+     * @return (GuzzleClient) $response
+     * its the starting function where we decide database required or not
+     */    
+    public function priceCall($request)
+    {    
+      
+        $data = [];
+        try
+        {   
+            if($request->get('withDatabaseCall', false) == true)
+            { 
+                // fetch price from database if e1 rurn error or empty.
+                
+                $data = $this->priceCallwithDatabase($request);
+            }
+            else
+            {   
+                \Log::info('$request->all()');
+                \Log::info($request->all());
+                // fetch price from ESG
+                $data = $this->price($request);  
+                
+            }
+        }
+        catch (\Exception $ex)
+        {
+            lumenLog('Exception : '.$ex->getMessage());
+            $data['success'] = false;
+            $data['statusCode'] = (method_exists($ex, 'getCode') ? $ex->getCode() : 500);
+        }
+
+        return $data;
+    }
+
+     /**
+     * ESG Price Call 
+     * @params $request
+     * @return (GuzzleClient) $response
+     * in this function we handled all the price related third party calls
+     */
+
+    function price($request) {
+
+        $response = [ 'success' => false , 'status_code' => 401];
+
+        if(config('esg.skip_call') === true)
+        {
+            // needs to handle this case in both cases fail/pass
+            // $data = ['from' => "esg", 'retry' =>  true, 'isValid' =>  false, 'adjPrice' => 0.00, 'item' => $request->get('skus')];
+            // $response = [ 'success' => false , 'status_code' => 401, 'data' => [$data]];
+
+            lumenLog("skipped ESG call.");
+            return $response;
+        }
+                
+        $sku  = $request->get('skus');       
+        $authResponse = $this->authentication();  
+         
+        if ($authResponse['success'])
+        {
+            $authToken = $authResponse['data']['access_token'];
+            
+            $productIdResponse = $this->productId( ['sku' => $sku, 'auth_token' => $authToken]); 
+
+             
+
+            if ($productIdResponse['success'] && $productIdResponse['data']['onCatalog'])
+            {
+                // need to be fixed it will be get from database in account matching 
+                // $accountCode = 'BUS019';
+                $accountCode = $request->accountCode;
+                $supplier_part_id = $productIdResponse['data']['id'];
+              
+                $productPriceResponse = $this->productPrice(['account_code' => $accountCode, 'supplier_part_id' => $supplier_part_id, 'auth_token' => $authToken]);
+                
+                if($productPriceResponse['success'])
+                {     
+                    $priceResponse = json_decode($productPriceResponse['data'], true);
+
+                    $item['from']  = "esg";
+                    $item['retry'] =  false;
+                    $item['isValid'] =  true;
+                    $item['adjPrice'] = $priceResponse['price'];
+                    $item['item']     = $sku;
+                    
+                    $response['data'] = [$item];
+                    $response['success'] = true;
+                    $response['status_code'] = 200; 
+                }  
+            }
+        } else {
+
+            $item['from']  = "esg";
+            $item['retry'] =  true;
+            $item['isValid'] =  false;
+            $item['adjPrice'] = 0.00;
+            $item['item'] = $sku;
+            
+
+            $response['data'] = [$item];
+            $response['success'] = true;
+            $response['status_code'] = 200; 
+            
+        }
+         
+        return $response;
+        
+    }
+
+    /**
      * ESG Product ID integration     
      * @params (array) $param
      * @return (GuzzleClient) $response
+     * its the single call to server to get product id
      */
-    private function getProductId($param)
+    private function productId($param)
     {
             
         $data = [ 'success' => false, 'data' => [] ]; 
@@ -230,7 +343,13 @@ class EsgController extends LeadsController {
         return $data;
     }
 
-    private function getProductPrice($param)
+    /**
+     * ESG Product ID integration     
+     * @params (array) $param
+     * @return (GuzzleClient) $response
+     * its the single call to server to get price against product id
+     */
+    private function productPrice($param)
     {
 
         $data = [ 'success' => false, 'data' => [] ];
@@ -267,91 +386,30 @@ class EsgController extends LeadsController {
     }
 
     /**
-     * Get Price Call from db or ESG 
+     * ESG Price Call with DB
      * @params $request
      * @return (GuzzleClient) $response
-     */    
-    public function getPriceCall($request)
-    {    
-        try
-        {   
-            if($request->get('withDatabaseCall', false) == true)
-            {
-                // fetch data from database if e1 rurn error or empty.
-                // $data = $this->getPriceCallwithDatabaseCall($request);
-            }
-            else
-            {
-                $data = $this->getPrice($request);            
-              
-            }
-        }
-        catch (\Exception $ex)
-        {
-            lumenLog('Exception : '.$ex->getMessage());
-            $data['success'] = false;
-            $data['statusCode'] = (method_exists($ex, 'getCode') ? $ex->getCode() : 500);
-        }
+     * its a database call to get price if the third party server call is failed.
+    */
 
-        return $data;
-    }
-
-     /**
-     * ESG Price Call 
-     * @params $request
-     * @return (GuzzleClient) $response
-     */
-
-    function getPrice($request) {
-
-        $response['success'] = false;
-
-        if(config('esg.skip_call') === true)
-        {
-            lumenLog("skipped ESG call.");
-            return $response;
-        }
-         
+    public function priceCallwithDatabase($request) {
        
-        $authResponse = $this->authentication();
+      $data = $this->price($request);
+       
+      //if esg Api return false
+      if(!empty($data['data']) && $data['data'][0]['isValid'] == false) {
+        $sku = $request->get('skus');
+        $response['success'] = true;
+        $response['status_code'] = 200;
         
-        if ($authResponse['success'])
-        {
-            $sku  = $request->get('skus');           
+        $dbPriceInst = new DatabasePriceController(); 
+        $response['data'] = $dbPriceInst->getPriceFromDb($sku);  // get Price from Database     
+      }
+      else { 
+        $response = $data; 
+      } 
 
-            $authToken      = $authResponse['data']['access_token'];
-            
-            $productIdResponse = $this->getProductId( ['sku' => $sku, 'auth_token' => $authToken] );
-            
-            if ($productIdResponse['success'])
-            {
-                // need to be fixed it will be get from database in account matching 
-                $accountCode = 'BUS019';
-                $supplier_part_id = $productIdResponse['data']['id'];
-              
-                $productPriceResponse = $this->getProductPrice(['account_code' => $accountCode, 'supplier_part_id' => $supplier_part_id, 'auth_token' => $authToken]);
-                 
-                if($productPriceResponse['success'])
-                {     
-                
-                    $priceResponse = json_decode($productPriceResponse['data'], true);
-
-                    $item['from']  = "esg";
-                    $item['retry'] =  false;
-                    $item['isValid'] =  true;
-                    $item['adjPrice'] = $priceResponse['price'];
-                    $item['item']     = $sku;
-                    
-                    $response['data'] = [$item];
-                    $response['success'] = true; 
-                    $response['status_code'] = 200;  
-
-                } 
-            }
-        }
-        
-        return $response;
-        
+      return $response;
     }
 
 
