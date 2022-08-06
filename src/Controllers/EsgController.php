@@ -15,6 +15,7 @@ use Component\CatalogComponent\App\Http\Controllers\DatabasePriceController;
 use Illuminate\Http\Request;
 use GuzzleHttp\Exception\GuzzleException;
 use PhpOffice\PhpSpreadsheet\Shared\OLE\PPS;
+use Throwable;
 
 class EsgController extends LeadsController {
 
@@ -85,12 +86,14 @@ class EsgController extends LeadsController {
             $method = config('esg.apis.authentication.method');
             $url    = config('esg.base_url').config('esg.apis.authentication.endpoint');
             $params = config('esg.apis.authentication.params');
-
+              
             $request['multipart'] = Collect($params)->map(function($item, $key){
                 return [ 'name' => $key, 'contents' => $item ];
             })->toArray();
 
             $response = curlRequest($method, $url, $request, $this->timeOut);
+            
+           
 
             if ($response != null && $response->getStatusCode() == 200)
             {
@@ -203,18 +206,15 @@ class EsgController extends LeadsController {
         try
         {   
             if($request->get('withDatabaseCall', false) == true)
-            { 
-                // fetch price from database if e1 rurn error or empty.
-                
+            {   
+               
+                // fetch price from database if e1 rurn error or empty. 
                 $data = $this->priceCallwithDatabase($request);
             }
             else
-            {   
-                \Log::info('$request->all()');
-                \Log::info($request->all());
+            {     
                 // fetch price from ESG
                 $data = $this->price($request);  
-                
             }
         }
         catch (\Exception $ex)
@@ -248,16 +248,18 @@ class EsgController extends LeadsController {
             return $response;
         }
                 
-        $sku  = $request->get('skus');       
-        $authResponse = $this->authentication();  
+        $sku  = $request->get('skus');    
+
          
+
+        $authResponse = $this->authentication();  
+        
         if ($authResponse['success'])
         {
             $authToken = $authResponse['data']['access_token'];
             
-            $productIdResponse = $this->productId( ['sku' => $sku, 'auth_token' => $authToken]); 
-
-             
+            $productIdResponse = $this->productId( ['sku' => $sku, 'auth_token' => $authToken]);  
+           
 
             if ($productIdResponse['success'] && $productIdResponse['data']['onCatalog'])
             {
@@ -410,6 +412,300 @@ class EsgController extends LeadsController {
       } 
 
       return $response;
+    }
+
+    /**
+     * SKU check in ESG product list API
+     * @param $sku_id
+     * @param $auth_token
+     * @return mixed|null
+     */
+    private function checkSkuExistInE1($sku_id, $auth_token)
+    {
+        $response = false;
+        try {
+            $esg_baseurl = config('accountmatching.esg.base_url');
+            $endpoint = config('accountmatching.esg.apis.product_sku.endpoint');
+            $method = config('accountmatching.esg.apis.product_sku.method');
+
+            $url = $esg_baseurl . str_replace('{sku_id}', $sku_id, $endpoint);
+
+            //set authorization headers
+            $request['headers'] = [
+                'Authorization' => 'Bearer ' . $auth_token,
+            ];
+
+            $curlResponse = curlRequest($method, $url, $request);
+            if ($curlResponse && $curlResponse->getStatusCode() == 200) {
+                $response = json_decode($curlResponse->getBody()->getContents(), true);
+            }
+        } catch (Throwable $e) {
+            \Log::info('ESG SKU API Error: ' . $e->getMessage());
+        }
+        return $response;
+    }
+
+
+    /**
+     * Add Bill Line items in ESG Cart API
+     * @param $accountId
+     * @param $auth_token
+     * @param $productId
+     * @param int $productQty
+     * @return mixed|null
+     */
+    private function addItemInCart($accountId, $auth_token, $productId, int $productQty = 1)
+    {
+        $response = false;
+        try {
+            $esg_baseurl = config('accountmatching.esg.base_url');
+            $endpoint = config('accountmatching.esg.apis.add_to_cart.endpoint');
+            $method = config('accountmatching.esg.apis.add_to_cart.method');
+
+            $url = $esg_baseurl . str_replace('{account_id}', $accountId, $endpoint);
+
+            //set authorization headers
+            $request['headers'] = [
+                'Authorization' => 'Bearer ' . $auth_token,
+            ];
+
+            $request['json'] = [
+                'productId' => $productId,
+                'productType' => 'PRODUCT',
+                'quantity' => $productQty
+            ];
+
+            $curlResponse = curlRequest($method, $url, $request);
+            if ($curlResponse && $curlResponse->getStatusCode() == 201) {
+                $response = json_decode($curlResponse->getBody()->getContents(), true);
+            }
+        } catch (Throwable $e) {
+            \Log::info('Add Cart Item API Error: ' . $e->getMessage());
+        }
+        return $response;
+    }
+
+
+    /**
+     * Get ESG Cart API
+     * @param $accountId
+     * @param $auth_token
+     * @return mixed|null
+     */
+    private function getCart($accountId, $auth_token)
+    {
+        $response = false;
+        try {
+            $esg_baseurl = config('accountmatching.esg.base_url');
+            $endpoint = config('accountmatching.esg.apis.user_cart.endpoint');
+            $method = config('accountmatching.esg.apis.user_cart.method');
+
+            $url = $esg_baseurl . str_replace('{account_id}', $accountId, $endpoint);
+
+            //set authorization headers
+            $request['headers'] = [
+                'Authorization' => 'Bearer ' . $auth_token,
+            ];
+
+            $curlResponse = curlRequest($method, $url, $request);
+            if ($curlResponse && $curlResponse->getStatusCode() == 200) {
+                $response = json_decode($curlResponse->getBody()->getContents(), true);
+            }
+        } catch (Throwable $e) {
+            \Log::info('Get Cart API Error: ' . $e->getMessage());
+        }
+        return $response;
+    }
+
+
+    /**
+     * Create Order in ESG API
+     * @param $accountId
+     * @param $auth_token
+     * @param $params
+     * @return mixed|null
+     */
+    private function createOrder($accountId, $auth_token, $params)
+    {
+        $response = false;
+        try {
+            $esg_baseurl = config('accountmatching.esg.base_url');
+            $endpoint = config('accountmatching.esg.apis.create_order.endpoint');
+            $method = config('accountmatching.esg.apis.create_order.method');
+
+            $url = $esg_baseurl . str_replace('{account_id}', $accountId, $endpoint);
+
+            //set authorization headers
+            $request['headers'] = [
+                'Authorization' => 'Bearer ' . $auth_token,
+            ];
+
+            $request['json'] = $params;
+
+            $curlResponse = curlRequest($method, $url, $request);
+            if ($curlResponse && $curlResponse->getStatusCode() == 201) {
+                $response = json_decode($curlResponse->getBody()->getContents(), true);
+            }
+        } catch (Throwable $e) {
+            \Log::info('Create Order API Error: ' . $e->getMessage());
+        }
+        return $response;
+    }
+
+
+    /**
+     * Get ESG User Address API
+     * @param $accountCode
+     * @param $auth_token
+     * @return mixed|null
+     */
+    private function getAddressESGUser($accountCode, $auth_token)
+    {
+        $response = false;
+        try {
+            $esg_baseurl = config('esg.base_url');
+            $endpoint = config('esg.apis.user_ship_address.endpoint');
+            $method = config('esg.apis.user_ship_address.method');
+             
+            $url = $esg_baseurl . str_replace('{account_code}', $accountCode, $endpoint);
+           
+            //set authorization headers
+            $request['headers'] = [
+                'Authorization' => 'Bearer ' . $auth_token,
+            ];
+             
+            $curlResponse = curlRequest($method, $url, $request);
+             
+            if ($curlResponse && $curlResponse->getStatusCode() == 200) {
+              
+                $response = json_decode($curlResponse->getBody()->getContents(), true);
+            }
+        } catch (Throwable $e) {
+            \Log::info('ESG User Address API Error: ' . $e->getMessage());
+        }
+        return $response;
+    }
+
+    /**
+     * Clear ESG Cart API
+     * @param $accountId
+     * @param $auth_token
+     * @return mixed|null
+     */
+    private function deleteCart($accountId, $auth_token)
+    {   
+        $response = false;
+        try {
+            $esg_baseurl = config('accountmatching.esg.base_url');
+            $endpoint = config('accountmatching.esg.apis.clear_cart.endpoint');
+            $method = config('accountmatching.esg.apis.clear_cart.method');
+
+            $url = $esg_baseurl . str_replace('{account_id}', $accountId, $endpoint);
+
+            //set authorization headers
+            $request['headers'] = [
+                'Authorization' => 'Bearer ' . $auth_token,
+            ];
+           
+            $curlResponse = curlRequest($method, $url, $request);
+            dd($curlResponse);
+            if ($curlResponse && $curlResponse->getStatusCode() == 200) {
+                $response = json_decode($curlResponse->getBody()->getContents(), true);
+            }
+        } catch (Throwable $e) {
+            \Log::info('Delete Cart API Error: ' . $e->getMessage());
+        }
+        return $response;
+    }
+
+
+    function ESGOrderCreationCall($bills) {
+        
+       
+
+        $authResponse = $this->authentication();   
+
+        if ($authResponse['success']) {
+            $body = $authResponse['data'];
+            $access_token = $body['access_token'];  
+
+            foreach ($bills as $bill) {
+                $company_data = $bill->company; // get params: esg_account_code, esg_account_id 
+                // $esg_user_address = $this->getAddressESGUser($company_data->esg_account_code, $access_token);
+                $esg_user_address = $this->getAddressESGUser('BUS019', $access_token);
+              
+                if (!$esg_user_address) {
+                    $bill->order_status = 2;
+                    $bill->error_response = "Error in ESG user address retrieving!";
+                    $bill->save();
+                    \Log::info('Error: in getAddressESGUser method than skip bill');
+                    continue; // if esg user address not exist in esg portal than skip bill
+                }
+                 
+                $shipToId = collect($esg_user_address)->first()['shipToId'];   
+                 
+                // clear cart first and add bill line items add into cart
+                // $this->deleteCart($company_data->esg_account_id, $access_token);
+                
+                $this->deleteCart(801, $access_token);
+
+                foreach ($bill->billLines as $bill_line) {
+                    $subscription = $bill_line->subscription;
+                    if (is_null($subscription)) { // if bill line item subscription not found than skip bill
+                        $bill->order_status = 2;
+                        $bill->error_response = "Error in BillLine subscription not found!";
+                        $bill->save();
+                        \Log::info('Error: in bill_line->subscription variable than skip bill');
+                        continue 2;
+                    }
+
+                    $sku_id = $subscription->service->skuid;
+
+                    $sku_check_resp = $this->checkSkuExistInE1($sku_id, $access_token);
+                    if (!$sku_check_resp) { // if SKU not exist in ESG api than skip bill
+                        $bill->order_status = 2;
+                        $bill->error_response = "Error in ESG SKU_ID retrieving data!";
+                        $bill->save();
+                        \Log::info('Error: in checkSkuExistInE1 method than skip bill');
+                        continue 2;
+                    }
+
+                    $this->addItemInCart($company_data->esg_account_id, $access_token, $sku_check_resp['id'], $bill_line->Seats);
+                }
+
+                $cartDetail = $this->getCart($company_data->esg_account_id, $access_token);
+                if (!$cartDetail) { // cart response empty or null order not placed
+                    $bill->order_status = 2;
+                    $bill->error_response = "Error in ESG item into add to cart!";
+                    $bill->save();
+                    \Log::info('Error: in getCart method than skip bill');
+                    continue;
+                }
+                $cartHeaderId = $cartDetail['cartHeaderId'];
+
+                $resp = $this->createOrder($company_data->esg_account_id, $access_token, [
+                    "attention" => substr($company_data->name, 0, 30),
+                    "po" => "CCM." . Carbon::now()->format('YmdHis'),
+                    "shipToId" => $shipToId,
+                    "sourceId" => $cartHeaderId,
+                    "sourceType" => "CART"
+                ]);
+                if (!$resp) {
+                    $bill->order_status = 2;
+                    $bill->error_response = "Error in ESG order create process!";
+                    $bill->save();
+                    \Log::info('Error: in createOrder method than skip bill');
+                    continue;
+                }
+
+                $bill->order_status = 1;
+                $bill->response = json_encode($resp);
+                $bill->esg_order_number = $resp['orderNumber'];
+                $bill->save();
+
+                \Log::info('ESG Order Created: ' . print_r(json_encode($resp), 1));
+            }
+        }
     }
 
 
