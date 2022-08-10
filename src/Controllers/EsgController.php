@@ -421,21 +421,23 @@ class EsgController extends LeadsController {
      * @return mixed|null
      */
     private function checkSkuExistInE1($sku_id, $auth_token)
-    {
+    {   
+        
         $response = false;
         try {
-            $esg_baseurl = config('accountmatching.esg.base_url');
-            $endpoint = config('accountmatching.esg.apis.product_sku.endpoint');
-            $method = config('accountmatching.esg.apis.product_sku.method');
+            $esg_baseurl = config('esg.base_url');
+            $endpoint = config('esg.apis.product_sku.endpoint');
+            $method = config('esg.apis.product_sku.method');
 
             $url = $esg_baseurl . str_replace('{sku_id}', $sku_id, $endpoint);
-
+           
             //set authorization headers
             $request['headers'] = [
                 'Authorization' => 'Bearer ' . $auth_token,
             ];
-
+          
             $curlResponse = curlRequest($method, $url, $request);
+            
             if ($curlResponse && $curlResponse->getStatusCode() == 200) {
                 $response = json_decode($curlResponse->getBody()->getContents(), true);
             }
@@ -458,9 +460,9 @@ class EsgController extends LeadsController {
     {
         $response = false;
         try {
-            $esg_baseurl = config('accountmatching.esg.base_url');
-            $endpoint = config('accountmatching.esg.apis.add_to_cart.endpoint');
-            $method = config('accountmatching.esg.apis.add_to_cart.method');
+            $esg_baseurl = config('esg.base_url');
+            $endpoint = config('esg.apis.add_to_cart.endpoint');
+            $method = config('esg.apis.add_to_cart.method');
 
             $url = $esg_baseurl . str_replace('{account_id}', $accountId, $endpoint);
 
@@ -496,9 +498,9 @@ class EsgController extends LeadsController {
     {
         $response = false;
         try {
-            $esg_baseurl = config('accountmatching.esg.base_url');
-            $endpoint = config('accountmatching.esg.apis.user_cart.endpoint');
-            $method = config('accountmatching.esg.apis.user_cart.method');
+            $esg_baseurl = config('esg.base_url');
+            $endpoint = config('esg.apis.user_cart.endpoint');
+            $method = config('esg.apis.user_cart.method');
 
             $url = $esg_baseurl . str_replace('{account_id}', $accountId, $endpoint);
 
@@ -529,9 +531,9 @@ class EsgController extends LeadsController {
     {
         $response = false;
         try {
-            $esg_baseurl = config('accountmatching.esg.base_url');
-            $endpoint = config('accountmatching.esg.apis.create_order.endpoint');
-            $method = config('accountmatching.esg.apis.create_order.method');
+            $esg_baseurl = config('esg.base_url');
+            $endpoint = config('esg.apis.create_order.endpoint');
+            $method = config('esg.apis.create_order.method');
 
             $url = $esg_baseurl . str_replace('{account_id}', $accountId, $endpoint);
 
@@ -596,9 +598,9 @@ class EsgController extends LeadsController {
     {   
         $response = false;
         try {
-            $esg_baseurl = config('accountmatching.esg.base_url');
-            $endpoint = config('accountmatching.esg.apis.clear_cart.endpoint');
-            $method = config('accountmatching.esg.apis.clear_cart.method');
+            $esg_baseurl = config('esg.base_url');
+            $endpoint = config('esg.apis.clear_cart.endpoint');
+            $method = config('esg.apis.clear_cart.method');
 
             $url = $esg_baseurl . str_replace('{account_id}', $accountId, $endpoint);
 
@@ -608,7 +610,7 @@ class EsgController extends LeadsController {
             ];
            
             $curlResponse = curlRequest($method, $url, $request);
-            dd($curlResponse);
+             
             if ($curlResponse && $curlResponse->getStatusCode() == 200) {
                 $response = json_decode($curlResponse->getBody()->getContents(), true);
             }
@@ -622,18 +624,16 @@ class EsgController extends LeadsController {
     function ESGOrderCreationCall($bills) {
         
        
-
         $authResponse = $this->authentication();   
-
+         
         if ($authResponse['success']) {
             $body = $authResponse['data'];
             $access_token = $body['access_token'];  
-
-            foreach ($bills as $bill) {
-                $company_data = $bill->company; // get params: esg_account_code, esg_account_id 
-                // $esg_user_address = $this->getAddressESGUser($company_data->esg_account_code, $access_token);
-                $esg_user_address = $this->getAddressESGUser('BUS019', $access_token);
-              
+          
+            foreach ($bills as $bill) {  
+                $company_data = $bill->company; // get params: esg_account_code, esg_account_id               
+                $esg_user_address = $this->getAddressESGUser($company_data->esg_account_code, $access_token);
+               
                 if (!$esg_user_address) {
                     $bill->order_status = 2;
                     $bill->error_response = "Error in ESG user address retrieving!";
@@ -643,11 +643,9 @@ class EsgController extends LeadsController {
                 }
                  
                 $shipToId = collect($esg_user_address)->first()['shipToId'];   
-                 
-                // clear cart first and add bill line items add into cart
-                // $this->deleteCart($company_data->esg_account_id, $access_token);
-                
-                $this->deleteCart(801, $access_token);
+               
+                // clear cart first and add bill line items add into cart   
+                $this->deleteCart($company_data->esg_account_id, $access_token);
 
                 foreach ($bill->billLines as $bill_line) {
                     $subscription = $bill_line->subscription;
@@ -660,8 +658,9 @@ class EsgController extends LeadsController {
                     }
 
                     $sku_id = $subscription->service->skuid;
-
+                    
                     $sku_check_resp = $this->checkSkuExistInE1($sku_id, $access_token);
+                     
                     if (!$sku_check_resp) { // if SKU not exist in ESG api than skip bill
                         $bill->order_status = 2;
                         $bill->error_response = "Error in ESG SKU_ID retrieving data!";

@@ -13,10 +13,14 @@
     use CCM\Leads\Jobs\sendNotification;
 
     use CCM\Leads\Traits\CustomValidation;
+    use CCM\Leads\Controllers\EsgController;
 
     class Controller extends LumenController
     {
         use CustomValidation;
+
+        public static $requestLogUserIP;
+        
 
         public const RESPONSE_SUCCESS = true;
         public const RESPONSE_FAILED = false;
@@ -29,6 +33,10 @@
         const STATUS_CODE_DB_FAILED = 424;
         const STATUS_CODE_INVALID_DATA_FAILED = 425;
         const STATUS_CODE_CURL_FAILED = 408;
+
+        const CONST_BSG = 'bsg';
+        const CONST_PSG = 'psg';
+        const CONST_ESG = 'esg';
 
         public function __construct()
         {
@@ -239,4 +247,64 @@
                 return createResponseData(422, false, $ex->getMessage());
             }
         }
+
+        // NEEDS TO BE HANDLED ALL THE PRICE CALL WITH SINGLE SKU
+        // REPLACE ALL THE VARIABLE NAME IN PROJECT WHERE CALL THIS FUNCTION
+        // ======================================================
+
+        /**
+         * Function to send Price call
+         * @param  $request
+         * @param  $skuId
+         * @param  $quantities
+         * it called from any component directly.
+         */ 
+        function getPriceCall($request, $skuId, $quantities = [])
+        { 
+            $request->merge(['skus' => $skuId]);
+            $request->merge(['quantities' => $quantities]);
+
+            return $this->getPriceAPICall($request); 
+        } 
+        
+        /**
+         * Function to send Price call
+         * @param  $request
+         * @param  $skuId
+         * @param  $quantities
+         * it called through url /v1/get-price-call
+         */ 
+        function getPriceAPICall(Request $request)
+        {    
+            $skuId = $request->get('skus');
+            $request->merge(['skus' => (is_array($skuId) ? $skuId[0] : $skuId)]);
+            $data = [];
+            $quantities = $request->get('quantities');
+            $request->merge(['quantities' => (is_array($quantities) ? $quantities[0] : $quantities)]);
+
+
+            $salesDivision = strtolower($request->user()->company->sales_division);
+            $accountAB = $request->user()->company->address_book_no;
+
+            // assigning $requestLogUserIP from order to variable which is defined in parent controller
+            self::$requestLogUserIP = $request->ip();
+
+            if($salesDivision == self::CONST_ESG)
+            {
+                // needs to be check why we add this value in request.
+                $request->merge(['accountCode' => $request->user()->company->esg_account_code]); 
+
+                $leadEsgObj = new EsgController(); 
+                $data = $leadEsgObj->priceCall($request);  
+                
+            } 
+            else if(in_array($salesDivision, [self::CONST_BSG, self::CONST_PSG])){
+                // $data = $this->getBsgPsgPrice($request, $accountAB);
+            } else {
+                // $data = $this->getE1Price($request);
+            }
+
+            return $data; 
+        }
+
     }
