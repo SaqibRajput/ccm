@@ -14,7 +14,7 @@
             'VERIFY_EMAIL' => 2,
             'BUSINESS_INFORMATION' => 3,
             'USER_INFORMATION' => 4,
-            //        'ADDRESS_OF_USE' => 5,
+            //'ADDRESS_OF_USE' => 5,
             'SUBSCRIPTION_PLAN' => 5,
             'AGREEMENT' => 6,
             'LAST_STEP' => 7

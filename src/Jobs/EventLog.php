@@ -2,12 +2,17 @@
 
 namespace CCM\Leads\Jobs;
 
-use App\Services\AuditController;
+use App\Services\EventLogController;
 
-class AuditLog extends Job
+class EventLog extends Job
 {
     protected $params;
-    protected $logsService;
+
+    public $tries = 3;
+
+    protected $logService;
+
+    protected $isObject;
 
     /**
      * Create a new job instance.
@@ -16,8 +21,8 @@ class AuditLog extends Job
      */
     public function __construct($params)
     {
-        $this->params = $params;;
-        $this->logsService = new AuditController();
+        $this->params = $params;
+        $this->logService = new EventLogController();
     }
 
     /**
@@ -27,8 +32,11 @@ class AuditLog extends Job
      */
     public function handle()
     {
-        lumenLog("Jobs");
+        
+        lumenLog("EventLog");
+
         $this->params = collect($this->params);
-        $this->logsService->index($this->params);
+        $this->logService->index($this->params);
+
     }
 }

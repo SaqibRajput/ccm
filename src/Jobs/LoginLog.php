@@ -2,7 +2,7 @@
 
 namespace CCM\Leads\Jobs;
 
-use CCM\Leads\Services\LogsService;
+use App\Services\LoginLogsController;
 
 class LoginLog extends Job
 {
@@ -19,8 +19,8 @@ class LoginLog extends Job
      */
     public function __construct($params)
     {
-        $this->params = $params->toArray();
-        $this->logsService = new LogsService();
+        $this->params = $params;
+        $this->logsService = new LoginLogsController();
     }
 
     /**
@@ -30,6 +30,8 @@ class LoginLog extends Job
      */
     public function handle()
     {
-        $this->logsService->login(collect($this->params));
+        lumenLog("job");
+        $this->params = collect($this->params);
+        $this->logsService->index($this->params);
     }
 }

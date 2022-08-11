@@ -4,14 +4,12 @@
 
     use Validator;
     use Illuminate\Http\Request;
-
     use Laravel\Lumen\Routing\Controller as LumenController;
-
     use CCM\Leads\Jobs\SendEmail;
+    use CCM\Leads\Jobs\EventLog;
     use CCM\Leads\Jobs\LoginLog;
-    use CCM\Leads\Jobs\AuditLog;
-    use CCM\Leads\Jobs\sendNotification;
-
+    use CCM\Leads\Jobs\SendNotification;
+    use Carbon\Carbon;
     use CCM\Leads\Traits\CustomValidation;
 
     class Controller extends LumenController
@@ -42,42 +40,158 @@
 
         // send email with queue
         public function sendEmail($params) {
-            dispatch(new SendEmail($params));
+           
+           dispatch(new SendEmail($params));
         }
 
         public function sendNotification($params) {
             dispatch(new SendNotification($params));
         }
 
+        // public function loginLog($params) {
+        //     dispatch(new LoginLog($params));
+        // }
+
         // send log request with queue
         public function loginLog($request, $success = true, $message = '') {
 
-            $user = $request->user ?? null;
+            // $user = $request->user ?? null;
 
-            $request->merge([
-                'success' => $success,
-                'message' => is_object($message) ? json_encode($message) : $message,
-                'user' => $user
-            ]);
+            // $request->merge([
+            //     'success' => $success,
+            //     'message' => is_object($message) ? json_encode($message) : $message,
+            //     'user' => $user
+            // ]);
 
             dispatch(new LoginLog($request));
         }
 
         // send audit log request with queue
-        public function auditLog($request, $object, $data = [], $type = 'select', $updatedData = []) {
+        // public function auditLog($request, $object, $data = [], $type = 'select', $updatedData = []) {
 
-            $request->merge([
-                'params' => [
-                    'type' => $type,
-                    'object' => $object,
-                    'data' => $data,
-                    'updatedData' => $updatedData // in case of update.
-                ]
-            ]);
+        //     $request->merge([
+        //         'params' => [
+        //             'type' => $type,
+        //             'object' => $object,
+        //             'data' => $data,
+        //             'updatedData' => $updatedData // in case of update.
+        //         ]
+        //     ]);
 
-            dispatch(new AuditLog($request));
+        //     dispatch(new AuditLog($request));
+        // }
+
+        /**
+         * Log event against action
+         * @param array $request_data
+         * @param string $actionable
+         * @param string $actionable_relation
+         * @return bool|mixed
+         */
+        function logEvent($request_data = [], $actionable = '', $actionable_relation = '')
+        {
+            
+            
+            if (!empty($request_data)) {
+                if (is_object($request_data) && $request_data instanceof Request) {
+                    $data = clone $request_data;
+                }else{
+                    $data = new Request($request_data);
+                }
+
+                if (empty($data->user())) {
+                    return true;
+                }
+                
+                
+                // This will modify $data internally
+                resolveUserData($data);
+                
+                
+                $data->merge([
+                    'date_time' => Carbon::now()->format('Y-m-d H:i:s'),
+                    'operating_system' => getOS($data),
+                    'browser' => getBrowser($data),
+                    'ip' => !empty($data->ip()) ? $data->ip() : $data->get('ip'),
+                    'request' => $data->all(),
+                    'portal_type' => $data->portal_type,
+                ]);
+               
+                
+
+                if(!empty(optional($data)->header('Manager-Admin-Email')))
+                    $data->merge(['manager_admin_email' => optional($data)->header('Manager-Admin-Email')]);
+                if(!empty(optional($data)->header('Manager-Admin-Name')))
+                    $data->merge(['manager_admin_name' => optional($data)->header('Manager-Admin-Name')]);
+                if(!empty(optional($data)->header('Assume-Role')))
+                    $data->merge(['assume_role' => optional($data)->header('Assume-Role')]);
+
+                  
+                if (!empty($actionable) && is_object($actionable)) {
+                    $data->merge([
+                        // CCP-4668
+                        'actionable' => (getAbsClassName($actionable) == "ServiceProviderPOC") ? "Service Provider POC" : getAbsClassName($actionable),
+                        'actionable_name' => !empty($data->get('actionable_name')) ? $data->get('actionable_name') : 'N/A',
+                        'actionable_id' => !empty($data->get('actionable_id')) ? $data->get('actionable_id') : '',
+                    ]);
+                }
+                
+
+                
+
+                if($data->get('customClass') == 'EndUserLicenseAgreement'){
+                    $data->merge([
+                        // CCP-6326 forcely update actionable name
+                        'actionable' => 'EndUserLicenseAgreement'
+                    ]);
+                }
+
+                if (!empty($actionable_relation) && is_object($actionable_relation)) {
+                    $data->merge([
+                        'actionable_relation' => getAbsClassName($actionable_relation),
+                        'actionable_relation_name' => !empty($data->get('actionable_relation_name')) ? $data->get('actionable_relation_name') : 'N/A',
+                        'actionable_relation_id' => !empty($data->get('actionable_relation_id')) ? $data->get('actionable_relation_id') : '',
+                    ]);
+                }
+                
+
+                $log_data = $data->only([
+                    'actionable',
+                    'actionable_id',
+                    'actionable_name',
+                    'actionable_relation',
+                    'actionable_relation_id',
+                    'actionable_relation_name',
+                    'user_id',
+                    'user_name',
+                    'from',
+                    'request',
+                    'to',
+                    'action',
+                    'portal_type',//
+                    'message',
+                    'browser',//
+                    'ip',//
+                    'operating_system',//
+                    'date_time',//
+                    'company_id',
+                    'manager_admin_email',
+                    'manager_admin_name',
+                    'assume_role',
+                    'organization',
+                    'account'
+                ]);
+
+               
+
+                dispatch(new EventLog($log_data));
+               
+            } else {
+                throw new \Exception("Exception raised while adding audit log. No request data provided");
+            }
         }
 
+       
         public function getServiceData(Request $request)
         {
             lumenLog('getServiceData');

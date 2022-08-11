@@ -42,6 +42,7 @@ class SendEmail extends Job
         {
         //    $this->params = collect($this->params);
         }
+        lumenLog("SendEmail");
 
         $this->params = collect($this->params);
         

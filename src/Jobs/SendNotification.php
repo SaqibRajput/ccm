@@ -2,7 +2,7 @@
 
 namespace CCM\Leads\Jobs;
 
-use CCM\Leads\Services\BroadcastService;
+use App\Services\NotificationController;
 
 class SendNotification extends Job
 {
@@ -22,7 +22,7 @@ class SendNotification extends Job
     public function __construct($params)
     {
         $this->params = $params;
-        $this->broadcastService = new BroadcastService();
+        $this->broadcastService = new NotificationController();
     }
 
     /**
@@ -32,6 +32,9 @@ class SendNotification extends Job
      */
     public function handle()
     {
-        $this->broadcastService->sendNotification($this->params);
+        $this->params = collect($this->params);
+        
+        $this->broadcastService->index($this->params);
+    
     }
 }
