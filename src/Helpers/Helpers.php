@@ -1074,9 +1074,6 @@
             lumenLog("**************** skip all curl calls ****************");
             $response = ['success' => false];
 
-            return $response;
-
-
             if($curlThroughPackage){ // when guzzle or any package is used
                 try{
                     $client = new Client();
